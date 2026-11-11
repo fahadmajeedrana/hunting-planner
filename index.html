@@ -24,25 +24,28 @@
   .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:10px 14px; }
   .span2 { grid-column:1 / -1; }
   label.f { display:block; font-size:12px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:.03em; }
-  input[type=text], input[type=date], input[type=time], input[type=tel], textarea, select {
+  input[type=text], input[type=date], input[type=time], input[type=tel], input[type=datetime-local], textarea, select {
     width:100%; font:inherit; padding:7px 8px; border:1px solid var(--line); border-radius:6px; background:#fff; color:var(--ink); margin-top:3px; min-height:36px; }
   select.empty { color:var(--muted); }
   textarea { resize:vertical; min-height:38px; overflow:hidden; }
   .member { border:1px solid var(--line); border-radius:8px; padding:12px; margin:10px 0; background:#fbfaf6; }
-  .member h3 { margin:0 0 8px; font-size:15px; display:flex; justify-content:space-between; align-items:center; }
+  .member.compact { padding:8px 12px; margin:8px 0; }
+  .member h3 { margin:0 0 8px; font-size:15px; display:flex; justify-content:space-between; align-items:center; gap:8px; }
+  .member h3 input.locname { flex:1; min-width:0; width:auto; margin:0; font-weight:700; font-size:15px; border:none; border-bottom:1px dashed var(--line); background:transparent; }
   .chips { display:flex; flex-wrap:wrap; gap:6px; margin-top:4px; }
   .chip { border:1px solid var(--line); border-radius:999px; padding:5px 12px; font-size:13px; background:#fff; cursor:pointer; user-select:none; }
   .chip.on { background:var(--accent); color:#fff; border-color:var(--accent); }
   .chip input { display:none; }
-  .progress { height:10px; background:#e5e1d5; border-radius:6px; overflow:hidden; }
-  .progress > div { height:100%; background:var(--accent); width:0; transition:width .2s; }
   .cat { border:1px solid var(--line); border-radius:8px; margin:12px 0; padding:10px 12px; break-inside:avoid; }
   .cat-head { display:flex; gap:8px; align-items:center; margin-bottom:6px; }
   .cat-head input { flex:1; min-width:0; font-weight:700; font-size:15px; border:none; border-bottom:1px dashed var(--line); margin:0; background:transparent; }
   .count { font-size:13px; color:var(--muted); white-space:nowrap; }
-  .item { display:grid; grid-template-columns:24px 1fr 76px 1fr 32px; gap:6px; align-items:center; padding:2px 0; }
+  .item { display:grid; grid-template-columns:24px 1fr 76px 1fr 56px 32px; gap:6px; align-items:center; padding:2px 0; }
   .item input[type=checkbox] { width:18px; height:18px; accent-color:var(--accent); }
   .item input[type=text], .item select { margin:0; padding:4px 6px; min-height:32px; }
+  .item .buy { font-size:12px; color:var(--muted); display:flex; gap:4px; align-items:center; cursor:pointer; }
+  .item .buy input { width:16px; height:16px; }
+  .item.tobuy .nm { color:var(--warn); }
   .item .x { background:none; border:none; color:var(--warn); padding:0; font-size:20px; }
   .tag { font-size:10px; background:#e8efe3; color:var(--accent); border-radius:4px; padding:0 4px; margin-left:4px; }
   .note { font-size:13px; color:var(--muted); }
@@ -51,18 +54,23 @@
   .maplinks { display:flex; flex-wrap:wrap; gap:6px 16px; margin-top:8px; font-size:13px; }
   .maplinks:empty { display:none; }
   .maplinks a { color:var(--accent); font-weight:600; }
+  .mapimg { margin:12px 0; break-inside:avoid; }
+  .mapimg img { max-width:100%; display:block; border:1px solid var(--line); border-radius:6px; }
+  .mapimg input { margin-top:4px; }
 
   @media (max-width:600px) {
     .wrap { padding:10px; }
     section { padding:12px; }
     .grid { grid-template-columns:1fr; }
-    input[type=text], input[type=date], input[type=time], input[type=tel], textarea, select { font-size:16px; }
+    input[type=text], input[type=date], input[type=time], input[type=tel], input[type=datetime-local], textarea, select { font-size:16px; }
     .toolbar button { flex:1 1 45%; }
     #saved { width:100%; margin:0; }
     .item { grid-template-columns:28px 1fr 72px 32px; row-gap:4px; padding:4px 0; border-bottom:1px solid #eee; }
     .item .nt { grid-column:2 / 4; grid-row:2; }
+    .item .buy { grid-column:4; grid-row:2; }
     .item .x { grid-column:4; grid-row:1; }
     .item input[type=checkbox] { width:22px; height:22px; }
+    .item .buy input { width:20px; height:20px; }
     .cat-head { flex-wrap:wrap; }
     .cat-head input { flex:1 1 100%; }
     .chip { padding:7px 12px; }
@@ -71,7 +79,7 @@
   @media print {
     @page { size:A4; margin:12mm; }
     body { background:#fff; font-size:11px; }
-    header, .toolbar, .noprint, .item .x, .cat-head button, .member h3 button { display:none !important; }
+    header, .toolbar, .noprint, .item .x, .item .buy, .cat-head button, .member h3 button, .mapimg button { display:none !important; }
     .printhead { display:block; font-size:11px; color:#444; margin-bottom:6px; }
     .ph { display:none !important; }
     .maplinks a { color:#000; text-decoration:none; }
@@ -80,15 +88,15 @@
     section { border:1px solid #999; margin:8px 0; padding:8px 10px; break-inside:auto; }
     .member, .cat { break-inside:avoid; }
     .grid { grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); }
-    input[type=text], input[type=date], input[type=time], input[type=tel], textarea, select { border:none; border-bottom:1px solid #ccc; border-radius:0; padding:2px 0; min-height:0; appearance:none; -webkit-appearance:none; font-size:11px; }
+    input[type=text], input[type=date], input[type=time], input[type=tel], input[type=datetime-local], textarea, select { border:none; border-bottom:1px solid #ccc; border-radius:0; padding:2px 0; min-height:0; appearance:none; -webkit-appearance:none; font-size:11px; }
     select.empty { color:transparent; }
     .chip:not(.on) { display:none; }
     .chip.on { background:none; color:#000; border:1px solid #000; padding:1px 8px; }
     .item { grid-template-columns:20px 1fr 50px 1fr; padding:1px 0; border:none; }
     .item .nt { grid-column:auto; grid-row:auto; }
+    .item.tobuy .nm { color:#000; }
     .item input[type=checkbox] { width:14px; height:14px; }
-    .progress { border:1px solid #999; }
-    .progress > div { background:#555 !important; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    .mapimg img { max-height:230mm; }
   }
 </style>
 </head>
@@ -128,25 +136,43 @@
         </select></div>
       <div><label class="f">Permit / access ref</label><input type="text" data-k="permitRef"></div>
       <div class="span2"><label class="f">Target species</label><div class="chips" id="speciesChips"></div></div>
-      <div class="span2"><label class="f">Plan (day by day)</label><textarea data-k="plan" placeholder="Day 1: drive in, hike to camp...&#10;Day 2: ..."></textarea></div>
-      <div class="span2"><label class="f">Route and bail-out options</label><textarea data-k="route" placeholder="Planned route, alternative exits, river crossings, no-go conditions"></textarea></div>
+      <div class="span2"><label class="f">Route and bail-out options</label><textarea data-k="route" placeholder="Planned route, alternative exits, no-go conditions"></textarea></div>
+      <div class="span2"><label class="f">Hazards</label><textarea data-k="hazards" placeholder="e.g. river gorges, crossings, steep ground"></textarea></div>
+      <div class="span2"><label class="f">Other parties and no-go areas</label><textarea data-k="noGo" placeholder="Other parties in the block and areas your party will avoid"></textarea></div>
+      <div class="span2"><label class="f">Plan notes and Plan B (exit plan may change)</label><textarea data-k="plan"></textarea></div>
     </div>
   </section>
 
   <section>
-    <h2>Locations and maps</h2>
-    <div class="note noprint" style="margin-bottom:8px">Enter coordinates for each place. A Google Maps link builds automatically from decimal lat/long (e.g. -41.2865, 174.7762); for NZTM, paste a share link instead. Topo50 grid ref and map link are optional. <a href="https://www.linz.govt.nz/products-services/maps/new-zealand-topographic-maps/topo50-map-chooser/topo50-sheet-index" target="_blank" rel="noopener">Find your Topo50 sheet</a></div>
+    <h2>Day-by-day itinerary</h2>
+    <div id="days"></div>
+    <button class="ghost noprint" onclick="addDay()">+ Add day</button>
+  </section>
+
+  <section>
+    <h2>Bookings and transport</h2>
     <div class="grid">
-      <div class="span2"><label class="f">Coordinate format used below</label>
-        <select data-k="coordFmt">
-          <option value="">Select…</option>
-          <option>NZTM2000 (easting / northing)</option>
-          <option>Lat / long (decimal degrees, WGS84)</option>
-          <option>Mixed (state format beside each)</option>
-        </select></div>
-      <div><label class="f">Map sheet(s)</label><input type="text" data-k="mapSheets" placeholder="e.g. Topo50 BT23"></div>
+      <div class="span2"><label class="f">Pre-hunt briefing / permit collection</label><input type="text" data-k="briefing" placeholder="Where and when"></div>
+    </div>
+    <div id="books"></div>
+    <button class="ghost noprint" onclick="addBook()">+ Add booking</button>
+  </section>
+
+  <section>
+    <h2>Locations and maps</h2>
+    <div class="note noprint" style="margin-bottom:8px">Choose the mapping system(s) you are using. Only the matching fields appear for each place.</div>
+    <div class="grid">
+      <div class="span2"><label class="f">Mapping systems used</label><div class="chips" id="sysChips"></div></div>
     </div>
     <div id="locs"></div>
+  </section>
+
+  <section id="mapsSec">
+    <h2>Map images</h2>
+    <div class="note noprint" style="margin-bottom:8px">Add a screenshot or photo of your map with camps, routes and hazards marked. Images are shrunk and stored in this browser; they print in the PDF.</div>
+    <div id="mapList"></div>
+    <input id="mapFile" type="file" accept="image/*" multiple style="display:none" onchange="addMapFiles(this.files); this.value=''">
+    <button class="ghost noprint" onclick="document.getElementById('mapFile').click()">+ Add map image</button>
   </section>
 
   <section>
@@ -186,12 +212,37 @@
           <option>No</option>
         </select></div>
       <div><label class="f">PLB registration / hex ID</label><input type="text" data-k="plbId"></div>
+      <div><label class="f">Satellite messenger</label>
+        <select data-k="satType">
+          <option value="">Select…</option>
+          <option>Garmin inReach</option>
+          <option>ZOLEO</option>
+          <option>SPOT</option>
+          <option>Other</option>
+          <option>None</option>
+        </select></div>
+      <div><label class="f">Messenger number / owner</label><input type="text" data-k="satNum"></div>
+      <div><label class="f">Weather forecast provided by / how</label><input type="text" data-k="weatherBy"></div>
       <div><label class="f">Radio channel / frequency</label><input type="text" data-k="radio"></div>
+      <div><label class="f">Radio check times</label><input type="text" data-k="radioChecks" placeholder="e.g. every hour on the hour"></div>
+      <div><label class="f">Days of food carried</label><select data-k="foodDays" data-range="1-21"></select></div>
+      <div><label class="f">Extra emergency food (days)</label><select data-k="foodExtra" data-range="0-5"></select></div>
       <div><label class="f">Vehicle make, colour, rego</label><input type="text" data-k="vehicle"></div>
       <div><label class="f">Vehicle parked at</label><input type="text" data-k="vehicleAt"></div>
       <div class="span2"><label class="f">Nearest hospital / medical centre</label><input type="text" data-k="hospital"></div>
       <div class="span2"><label class="f">Weather forecast and river / fire notes</label><textarea data-k="weather"></textarea></div>
       <div class="span2"><label class="f">Firearm details (make, calibre, serial, licence no.)</label><textarea data-k="firearms" placeholder="e.g. Tikka T3x, calibre, serial, licence number"></textarea></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Emergency protocols</h2>
+    <div class="grid">
+      <div class="span2"><label class="f">If overdue: who to notify and how</label><textarea data-k="overdue"></textarea></div>
+      <div class="span2"><label class="f">Agreed signals (shots / whistle)</label><textarea data-k="signals" placeholder="e.g. how to call for help, how to reply"></textarea></div>
+      <div class="span2"><label class="f">Lost or missing party member</label><textarea data-k="lostPlan" placeholder="e.g. where to search first, check times, when to return to base"></textarea></div>
+      <div class="span2"><label class="f">River crossings</label><textarea data-k="riverPlan"></textarea></div>
+      <div class="span2"><label class="f">Minor and major injury</label><textarea data-k="injuryPlan" placeholder="e.g. first aid kit, then PLB / messenger / whistle"></textarea></div>
     </div>
   </section>
 
@@ -206,7 +257,11 @@
       <div><label class="f">Phone</label><input type="tel" data-k="ec2p"></div>
       <div><label class="f">Relationship</label>
         <select data-k="ec2r"><option value="">Select…</option><option>Partner</option><option>Parent</option><option>Sibling</option><option>Child</option><option>Friend</option><option>Other</option></select></div>
+      <div class="span2"><label class="f">Contact notes</label><textarea data-k="ecNotes" placeholder="e.g. who coordinates with other families"></textarea></div>
     </div>
+    <h3 style="font-size:14px;margin:14px 0 0">Other contacts</h3>
+    <div id="contacts"></div>
+    <button class="ghost noprint" onclick="addContact()">+ Add contact</button>
   </section>
 
   <section>
@@ -217,10 +272,10 @@
 
   <section>
     <h2>Kit inventory</h2>
-    <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>Items carried</span><span id="overall"></span></div>
+    <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>Items carried</span><span><span id="overall"></span><span id="tobuy" class="noprint"></span></span></div>
     <div id="cats"></div>
     <button class="ghost noprint" onclick="addCat()">+ Add category</button>
-    <div class="note noprint" style="margin-top:8px">Tick each item you are carrying and set the quantity. Items tagged <span class="tag">suggested</span> are reminders; delete any you don't need. Only carried items print.</div>
+    <div class="note noprint" style="margin-top:8px">Tick each item you are carrying and set the quantity. Tick "Buy" for anything you still need to get. Items tagged <span class="tag">suggested</span> are reminders; delete any you don't need. Only carried items print.</div>
   </section>
 
   <section>
@@ -230,33 +285,43 @@
 </div>
 
 <script>
-const KEY = 'huntTripPlanner.v2', OLDKEY = 'huntTripPlanner.v1';
+const KEY = 'huntTripPlanner.v2', OLDKEY = 'huntTripPlanner.v1', VER = 3;
+const $ = id => document.getElementById(id);
 const SPECIES = ['Red deer','Fallow','Sika','Sambar','Chamois','Tahr','Pig','Goat','Waterfowl','Other'];
 const CAPS = ['Firearms licence','First aid trained','Navigation (map/GPS)','Radio / PLB operation','Experienced hunter','Game recovery / butchery','Strong swimmer','River crossing experience','Driver (4WD)','Fire / shelter skills'];
 const CONDS = ['None known','Asthma','Diabetes','Heart condition','High blood pressure','Epilepsy','Anaphylaxis risk','Back / joint issues'];
 const ALLERGS = ['None known','Penicillin','Bee / wasp','Nuts','Latex','Sandfly reactions'];
 const AGES = ['Under 18','18–29','30–39','40–49','50–59','60+'];
 const ROLES = ['Trip leader','Experienced hunter','Novice','Guest / observer'];
+const YEARS = ['Under 2','2–5','5–10','10–20','20+'];
+const FITNESS = ['Limited','Average','Good','Very fit'];
+const KNOWS = ['First time','Visited before','Know it well'];
 const BLOOD = ['A+','A−','B+','B−','AB+','AB−','O+','O−','Unknown'];
 const QTY = ['1','2','3','4','5','6','7','8','9','10','12','15','20'];
+const BOOK_TYPES = ['Ferry','Accommodation','Helicopter','Boat','Shuttle / transfer','Other'];
+const SYS = ['Google Maps','NZ Topo50','Lat / long','NZTM'];
+const TOPO_FINDER = 'https://www.linz.govt.nz/products-services/maps/new-zealand-topographic-maps/topo50-map-chooser/topo50-sheet-index';
+const DEF_LOCS = [['vehicle','Vehicle / trailhead'],['camp','Camp / hut'],['hunt','Hunting area (centre)'],['bail','Bail-out / alternative exit'],['water','Water source']];
 
-// [name, suggested?]  (quantities start blank)
+// [name, suggested?, new in this version?]  (quantities start blank)
 const DEF_CATS = [
- ['Camp', [['Tent'],['Hammer'],['Sleeping bag'],['Mattress'],['Headlamp'],['Tent lamp'],['Tarps'],['Pillow'],['Spare batteries',1],['Tent pegs / spare guy line',1]]],
+ ['Camp', [['Tent'],['Hammer'],['Sleeping bag'],['Mattress'],['Headlamp'],['Tent lamp'],['Tarps'],['Pillow'],['Spare batteries',1],['Tent pegs / spare guy line',1],['Spare tent / fly',1,1],['Ground sheet',1,1],['Axe / saw',1,1],['Camp chair',1,1]]],
  ['Toiletries', [['Toilet tissue'],['Wipes'],['Hand wash'],['Hand sanitiser'],['Body wash / shampoo'],['Toothbrush'],['Toothpaste'],['Towel'],['Trowel',1]]],
- ['First aid / medicine', [['Paracetamol'],['Brufen'],['Tday / anti-allergy'],['Nibrol Forte'],['Hydrosol / rash'],['Flagyl'],['Energy capsules'],['Electrolyte powder'],['Sun screen'],['Sandfly spray'],['Bandage'],['Compression bandage / tourniquet',1],['Blister plasters',1],['Scissors / tweezers',1],['Personal prescription meds',1],['Water purification tablets / filter',1]]],
- ['Food', [['Tea bags / decaf coffee / green tea'],['Sugar'],['Salt'],['Black pepper'],['Milk (long life / powder)'],['Wraps / roti'],['Ready rice'],['Ready daal'],['Chicken tin'],['Cooked chicken'],['Ketchup'],['Mayo'],['Oat bar'],['Chocolate bar'],['Marinated lamb'],['Coke'],['Dates / snacks'],['Emergency food (extra day)',1]]],
- ['Utensils / cooking / misc', [['Pots'],['Stove / gas'],['Spoons'],['Garbage bags'],['Lighter'],['Water container'],['Multi tool'],['Pen'],['Notebook'],['Tape'],['Power bank'],['Charger'],['Spare lighter / firelighters',1],['Whistle',1]]],
- ['Hunting', [['Survival blanket'],['Plastic bag (meat)'],['Meat sack'],['Pull-through'],['Range finder'],['Tikka T3x'],['Suppressor'],['Ammo'],['Cleaning kit'],['Knife (small)'],['Knife (big)'],['Knife sharpener'],['Emergency shelter'],['Dry bag'],['Hunting permit'],['Gun licence'],['Rope / paracord'],['Bum bag'],['Hydration bladder'],['Bivvy string'],['Map, ruler, pencil'],['PLB'],['Radio'],['GPS'],['Chamber flag'],['Binoculars',1],['Ear protection',1]]],
- ['Clothing', [['Polyprop T-shirt'],['Sweatshirt'],['Thermal shirt'],['Trousers'],['Windbreaker'],['Fleece liner'],['Waterproof upper'],['Waterproof trousers'],['Waterproof socks'],['Wool socks'],['Beanie'],['Gloves'],['Camp trousers'],['Camp T-shirt'],['Camp fleece / hoody'],['Gumboots / crocs'],['Hunting boots'],['High viz jacket'],['High viz cap'],['Gators'],['Spare dry set (sealed in dry bag)',1]]],
+ ['First aid / medicine', [['Paracetamol'],['Brufen'],['Tday / anti-allergy'],['Nibrol Forte'],['Hydrosol / rash'],['Flagyl'],['Energy capsules'],['Electrolyte powder'],['Sun screen'],['Sandfly spray'],['Bandage'],['Compression bandage / tourniquet',1],['Blister plasters',1],['Scissors / tweezers',1],['Personal prescription meds',1],['Water purification tablets / filter',1],['Triangular bandage',1,1],['Antiseptic wipes',1,1],['Antiseptic cream',1,1],['Antifungal powder',1,1],['Vaseline',1,1],['Plasters',1,1],['Thermometer',1,1],['Glucose lollies',1,1]]],
+ ['Food', [['Tea bags / decaf coffee / green tea'],['Sugar'],['Salt'],['Black pepper'],['Milk (long life / powder)'],['Wraps / bread'],['Ready meal'],['Tinned meat / fish'],['Cooked meat'],['Sauces'],['Oat bar'],['Chocolate bar'],['Marinated / fresh meat'],['Coke'],['Dates / snacks'],['Emergency food (extra day)',1]]],
+ ['Utensils / cooking / misc', [['Pots'],['Stove / gas'],['Spoons'],['Garbage bags'],['Lighter'],['Water container'],['Multi tool'],['Pen'],['Notebook'],['Tape'],['Power bank'],['Charger'],['Spare lighter / firelighters',1],['Whistle',1],['Matches / fire starter',1,1],['Repair kit (duct tape, zip ties, needle)',1,1],['Spare boot laces',1,1]]],
+ ['Hunting', [['Survival blanket'],['Plastic bag (meat)'],['Meat sack'],['Pull-through'],['Range finder'],['Tikka T3x'],['Suppressor'],['Ammo'],['Cleaning kit'],['Knife (small)'],['Knife (big)'],['Knife sharpener'],['Emergency shelter'],['Dry bag'],['Hunting permit'],['Gun licence'],['Rope / paracord'],['Bum bag'],['Hydration bladder'],['Bivvy string'],['Map, ruler, pencil'],['PLB'],['Radio'],['GPS'],['Chamber flag'],['Binoculars',1],['Ear protection',1],['Compass',1,1],['Watch',1,1],['Satellite messenger',1,1],['Rifle oil',1,1],['Bipod',1,1],['Camera',1,1],['Hut tickets',1,1]]],
+ ['Clothing', [['Polyprop T-shirt'],['Sweatshirt'],['Thermal shirt'],['Trousers'],['Windbreaker'],['Fleece liner'],['Waterproof upper'],['Waterproof trousers'],['Waterproof socks'],['Wool socks'],['Beanie'],['Gloves'],['Camp trousers'],['Camp T-shirt'],['Camp fleece / hoody'],['Gumboots / crocs'],['Hunting boots'],['High viz jacket'],['High viz cap'],['Gators'],['Spare dry set (sealed in dry bag)',1],['Balaclava',1,1],['Sun hat',1,1],['Sunglasses',1,1],['Down jacket',1,1],['Sandfly head net',1,1]]],
  ['Vehicle and paperwork', [['Fuel (enough for return)',1],['Spare tyre / jack',1],['Photo ID',1],['Cash / card',1],['Landowner / DOC permission',1],['Printed copy of this plan left with contact',1]]]
 ];
+const RENAMES = {'Ready rice':'Ready meal','Ready daal':'Ready meal','Chicken tin':'Tinned meat / fish','Cooked chicken':'Cooked meat','Marinated lamb':'Marinated / fresh meat','Wraps / roti':'Wraps / bread','Ketchup':'Sauces','Mayo':'Sauces'};
 
-function mkCats(){ return DEF_CATS.map(([name,items]) => ({ name, items: items.map(([t,s]) => ({ t, q:'', n:'', done:false, s:!!s })) })); }
-function blankMember(){ return { name:'', age:'', phone:'', role:'', blood:'', caps:[], capsOther:'', conds:[], cond:'', allergs:[], allergy:'', meds:'', ecn:'', ecp:'' }; }
-function fresh(){ return { f:{}, party:[blankMember()], cats:mkCats() }; }
+function mkCats(){ return DEF_CATS.map(([name,items]) => ({ name, items: items.map(([t,s]) => ({ t, q:'', n:'', done:false, s:!!s, b:false })) })); }
+function defLocs(){ return DEF_LOCS.map(([id,name]) => ({id, name})); }
+function blankMember(){ return { name:'', age:'', phone:'', role:'', yrs:'', fit:'', knows:'', blood:'', caps:[], capsOther:'', conds:[], cond:'', allergs:[], allergy:'', meds:'', ecn:'', ecp:'' }; }
+function fresh(){ return { v:VER, f:{}, party:[blankMember()], cats:mkCats(), locs:defLocs(), days:[], books:[], contacts:[], maps:[] }; }
 
-// Load (migrates v1 data: clears old quantities, renames and adds the new items)
+// Load (also migrates data saved by earlier versions)
 let S = null;
 try { S = JSON.parse(localStorage.getItem(KEY)); } catch(e){}
 if (!S) {
@@ -273,12 +338,44 @@ if (!S) {
   } catch(e){}
 }
 if (!S || !S.cats) S = fresh();
-S.f = S.f || {}; S.party = S.party && S.party.length ? S.party : [blankMember()];
+S.f = S.f || {};
+S.party = S.party && S.party.length ? S.party : [blankMember()];
+S.locs = S.locs || defLocs();
+['days','books','contacts','maps'].forEach(k => S[k] = S[k] || []);
 S.f.species = S.f.species || [];
+S.f.mapSys = S.f.mapSys || [];
+
+if ((S.v || 1) < VER) {
+  // generic food names (merging duplicates), then add the newly suggested items
+  S.cats.forEach(c => {
+    const seen = {};
+    c.items = c.items.filter(it => {
+      if (RENAMES[it.t]) it.t = RENAMES[it.t];
+      const k = (it.t || '').trim().toLowerCase();
+      if (!k) return true;
+      if (seen[k]) { seen[k].done = seen[k].done || it.done; if (!seen[k].q) seen[k].q = it.q; return false; }
+      seen[k] = it; return true;
+    });
+  });
+  DEF_CATS.forEach(([cn, items]) => {
+    const c = S.cats.find(x => x.name === cn); if (!c) return;
+    items.filter(i => i[2]).forEach(([t]) => { if (!c.items.some(x => (x.t || '').toLowerCase() === t.toLowerCase())) c.items.push({ t, q:'', n:'', done:false, s:true, b:false }); });
+  });
+  S.v = VER;
+}
+if (!S.f.mapSys.length) { // carry over details entered before mapping systems existed
+  const has = p => S.locs.some(l => (S.f[p + l.id] || '').trim());
+  if (has('c_')) {
+    if ((S.f.coordFmt || '').includes('NZTM')) { S.locs.forEach(l => { S.f['n_' + l.id] = S.f['c_' + l.id] || ''; S.f['c_' + l.id] = ''; }); S.f.mapSys.push('NZTM'); }
+    else S.f.mapSys.push('Lat / long');
+  }
+  if (has('g_')) S.f.mapSys.push('Google Maps');
+  if (has('r_') || has('t_') || (S.f.mapSheets || '').trim()) S.f.mapSys.push('NZ Topo50');
+}
 
 function save(){
-  try { localStorage.setItem(KEY, JSON.stringify(S)); document.getElementById('saved').textContent = 'Saved ' + new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}); }
-  catch(e){ document.getElementById('saved').textContent = 'Could not save (storage blocked)'; }
+  try { localStorage.setItem(KEY, JSON.stringify(S)); $('saved').textContent = 'Saved ' + new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}); }
+  catch(e){ $('saved').textContent = 'Could not save (storage full or blocked). Export a backup.'; }
 }
 
 function h(tag, attrs, ...kids){
@@ -320,77 +417,167 @@ function chipGroup(opts, arr, onChange){
   });
   return wrap;
 }
-
-// Locations: coordinates, Topo50 grid ref and map links
-const LOCS = [['vehicle','Vehicle / trailhead'],['camp','Camp / hut'],['hunt','Hunting area (centre)'],['bail','Bail-out / alternative exit'],['water','Water source']];
-(function(){
-  const box = document.getElementById('locs');
-  const dk = (key, lab, ph) => field(lab, h('input', {type:'text', 'data-k':key, placeholder:ph}));
-  LOCS.forEach(([k, label]) => box.append(h('div', {class:'member'},
-    h('h3', {}, h('span', {}, label)),
-    h('div', {class:'grid'},
-      dk('c_' + k, 'Coordinates', 'Lat/long or NZTM'),
-      dk('r_' + k, 'Topo50 grid ref', 'e.g. BT23 123 456'),
-      dk('g_' + k, 'Google Maps link (optional)', 'Paste link, or leave blank to build from lat/long'),
-      dk('t_' + k, 'Topo50 web map link (optional)', 'Paste link')),
-    h('div', {class:'maplinks', id:'ml_' + k}))));
-})();
+function field(label, ctl, span){ return h('div', {class: span ? 'span2' : ''}, h('label', {class:'f'}, label), ctl); }
+function txt(val, cb, type){ const el = h('input', {type:type || 'text'}); el.value = val || ''; el.addEventListener('input', () => { cb(el.value); save(); }); return el; }
+function area(val, cb){ const el = h('textarea'); el.value = val || ''; el.addEventListener('input', () => { cb(el.value); grow(el); save(); }); return el; }
+function rmBtn(fn){ return h('button', {class:'danger small', onclick:fn}, 'Remove'); }
 
 // Static fields (inputs, selects, textareas)
+document.querySelectorAll('select[data-range]').forEach(s => {
+  const [a, b] = s.dataset.range.split('-').map(Number);
+  s.append(h('option', {value:''}, 'Select…'));
+  for (let i = a; i <= b; i++) s.append(h('option', {value:String(i)}, String(i)));
+});
 document.querySelectorAll('[data-k]').forEach(el => {
   const v = S.f[el.dataset.k] || '';
   if (el.tagName === 'SELECT') setSel(el, v); else el.value = v;
   el.addEventListener('input', () => { S.f[el.dataset.k] = el.value; if (el.tagName === 'SELECT') markEmpty(el); if (el.tagName === 'TEXTAREA') grow(el); save(); });
 });
-document.getElementById('speciesChips').append(chipGroup(SPECIES, S.f.species, save));
+$('speciesChips').append(chipGroup(SPECIES, S.f.species, save));
 
-// Map links
-function parseLL(s){
-  const m = (s || '').match(/(-?\d{1,2}\.\d+)\s*[,; ]\s*(-?\d{1,3}\.\d+)/);
+// Itinerary
+function renderDays(){
+  const box = $('days'); box.innerHTML = '';
+  S.days.forEach((d, i) => box.append(h('div', {class:'member compact'},
+    h('h3', {}, h('span', {}, 'Day ' + (i + 1)), rmBtn(() => { S.days.splice(i, 1); save(); renderDays(); })),
+    h('div', {class:'grid'},
+      field('Date', txt(d.date, v => d.date = v, 'date')),
+      field('Where / camp', txt(d.where, v => d.where = v)),
+      field('Plan for the day', area(d.plan, v => d.plan = v), true)))));
+  growAll();
+}
+function addDay(){ S.days.push({date:'', where:'', plan:''}); save(); renderDays(); }
+
+// Bookings
+function renderBooks(){
+  const box = $('books'); box.innerHTML = '';
+  S.books.forEach((b, i) => box.append(h('div', {class:'member'},
+    h('h3', {}, h('span', {}, 'Booking ' + (i + 1)), rmBtn(() => { S.books.splice(i, 1); save(); renderBooks(); })),
+    h('div', {class:'grid'},
+      field('Type', sel(BOOK_TYPES, b.type, v => { b.type = v; save(); })),
+      field('Provider / name', txt(b.name, v => b.name = v)),
+      field('Booking ref', txt(b.ref, v => b.ref = v)),
+      field('Date and time', txt(b.when, v => b.when = v, 'datetime-local')),
+      field('Contact phone', txt(b.phone, v => b.phone = v, 'tel')),
+      field('Notes (pickup point, pilots, etc.)', area(b.notes, v => b.notes = v), true)))));
+  growAll();
+}
+function addBook(){ S.books.push({type:'', name:'', ref:'', when:'', phone:'', notes:''}); save(); renderBooks(); }
+
+// Other contacts
+function renderContacts(){
+  const box = $('contacts'); box.innerHTML = '';
+  S.contacts.forEach((c, i) => box.append(h('div', {class:'member compact'},
+    h('h3', {}, h('span', {}, 'Contact ' + (i + 1)), rmBtn(() => { S.contacts.splice(i, 1); save(); renderContacts(); })),
+    h('div', {class:'grid'},
+      field('Name / organisation', txt(c.name, v => c.name = v)),
+      field('Phone', txt(c.phone, v => c.phone = v, 'tel')),
+      field('Role / notes', txt(c.role, v => c.role = v))))));
+}
+function addContact(){ S.contacts.push({name:'', phone:'', role:''}); save(); renderContacts(); }
+
+// Mapping systems and location blocks
+function parseLL(v){
+  const m = (v || '').match(/(-?\d{1,2}\.\d+)\s*[,; ]\s*(-?\d{1,3}\.\d+)/);
   if (!m) return null;
   const a = +m[1], b = +m[2];
   return Math.abs(a) <= 90 && Math.abs(b) <= 180 ? [a, b] : null;
 }
 const isUrl = v => /^https?:\/\/\S+$/i.test((v || '').trim());
-function updLinks(k){
-  const box = document.getElementById('ml_' + k); box.innerHTML = '';
-  let g = (S.f['g_' + k] || '').trim();
-  const ll = parseLL(S.f['c_' + k]);
-  if (!isUrl(g)) g = ll ? 'https://www.google.com/maps?q=' + ll[0] + ',' + ll[1] : '';
-  const t = (S.f['t_' + k] || '').trim();
-  const add = (txt, url) => box.append(h('a', {href:url, target:'_blank', rel:'noopener'}, txt));
-  if (g) add('Open in Google Maps', g);
-  if (isUrl(t)) add('Open Topo50 map', t);
+function bindIn(el){
+  const key = el.dataset.k; el.value = S.f[key] || '';
+  el.addEventListener('input', () => { S.f[key] = el.value; save(); });
 }
-LOCS.forEach(([k]) => {
-  ['c_', 'g_', 't_'].forEach(p => document.querySelector('[data-k="' + p + k + '"]').addEventListener('input', () => updLinks(k)));
-  updLinks(k);
-});
+function renderLocs(){
+  const box = $('locs'); box.innerHTML = '';
+  const on = x => S.f.mapSys.includes(x);
+  if (!S.f.mapSys.length) { box.append(h('div', {class:'note noprint'}, 'Select a mapping system above to enter locations.')); return; }
+  if (on('NZ Topo50')) {
+    const ms = h('input', {type:'text', 'data-k':'mapSheets', placeholder:'e.g. BT23'}); bindIn(ms);
+    box.append(h('div', {class:'grid'}, field('Topo50 sheet(s)', ms)),
+      h('div', {class:'note noprint', style:'margin:6px 0'}, h('a', {href:TOPO_FINDER, target:'_blank', rel:'noopener'}, 'Find your Topo50 sheet')));
+  }
+  S.locs.forEach((loc, li) => {
+    const k = loc.id, cells = [], inputs = [];
+    const add = (key, lab, ph) => { const i = h('input', {type:'text', 'data-k':key, placeholder:ph}); bindIn(i); inputs.push(i); cells.push(field(lab, i)); };
+    if (on('Lat / long')) add('c_' + k, 'Lat / long', 'e.g. -41.2865, 174.7762');
+    if (on('NZTM')) add('n_' + k, 'NZTM (easting / northing)', 'Easting, northing');
+    if (on('NZ Topo50')) { add('r_' + k, 'Topo50 grid ref', 'e.g. BT23 123 456'); add('t_' + k, 'Topo50 web map link', 'Paste link'); }
+    if (on('Google Maps')) add('g_' + k, 'Google Maps link', on('Lat / long') ? 'Paste link, or leave blank to build from lat/long' : 'Paste share link');
+    const links = h('div', {class:'maplinks'});
+    const upd = () => {
+      links.innerHTML = '';
+      const addL = (txt, url) => links.append(h('a', {href:url, target:'_blank', rel:'noopener'}, txt));
+      if (on('Google Maps')) {
+        let g = (S.f['g_' + k] || '').trim();
+        const ll = on('Lat / long') ? parseLL(S.f['c_' + k]) : null;
+        if (!isUrl(g)) g = ll ? 'https://www.google.com/maps?q=' + ll[0] + ',' + ll[1] : '';
+        if (g) addL('Open in Google Maps', g);
+      }
+      if (on('NZ Topo50') && isUrl(S.f['t_' + k])) addL('Open Topo50 map', S.f['t_' + k].trim());
+    };
+    inputs.forEach(i => i.addEventListener('input', upd));
+    upd();
+    const name = h('input', {type:'text', class:'locname', placeholder:'Location name'}); name.value = loc.name || '';
+    name.addEventListener('input', () => { loc.name = name.value; save(); });
+    box.append(h('div', {class:'member'},
+      h('h3', {}, name, rmBtn(() => { if (confirm('Remove this location?')) { S.locs.splice(li, 1); save(); renderLocs(); } })),
+      h('div', {class:'grid'}, cells), links));
+  });
+  box.append(h('button', {class:'ghost noprint', onclick:() => { S.locs.push({id:'x' + Date.now().toString(36), name:'New location'}); save(); renderLocs(); }}, '+ Add location'));
+}
+$('sysChips').append(chipGroup(SYS, S.f.mapSys, () => { save(); renderLocs(); }));
+
+// Map images (shrunk and stored in the browser)
+function addMapFiles(files){
+  [...files].forEach(f => {
+    const r = new FileReader();
+    r.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const sc = Math.min(1, 1400 / Math.max(img.width, img.height));
+        const c = document.createElement('canvas'); c.width = Math.round(img.width * sc); c.height = Math.round(img.height * sc);
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        S.maps.push({src:c.toDataURL('image/jpeg', 0.75), cap:f.name.replace(/\.[^.]+$/, '')});
+        save(); renderMaps();
+      };
+      img.src = r.result;
+    };
+    r.readAsDataURL(f);
+  });
+}
+function renderMaps(){
+  const box = $('mapList'); box.innerHTML = '';
+  S.maps.forEach((m, i) => {
+    const cap = h('input', {type:'text', placeholder:'Caption (e.g. camps and gorges)'}); cap.value = m.cap || '';
+    cap.addEventListener('input', () => { m.cap = cap.value; save(); });
+    box.append(h('div', {class:'mapimg'}, h('img', {src:m.src, alt:m.cap || 'Map'}), cap, rmBtn(() => { S.maps.splice(i, 1); save(); renderMaps(); })));
+  });
+}
 
 // Party
-function field(label, ctl, span){ return h('div', {class: span ? 'span2' : ''}, h('label', {class:'f'}, label), ctl); }
-function txt(val, cb, type){ const el = h('input', {type:type || 'text'}); el.value = val || ''; el.addEventListener('input', () => { cb(el.value); save(); }); return el; }
-function area(val, cb){ const el = h('textarea'); el.value = val || ''; el.addEventListener('input', () => { cb(el.value); grow(el); save(); }); return el; }
-
 function renderParty(){
-  const box = document.getElementById('party'); box.innerHTML = '';
+  const box = $('party'); box.innerHTML = '';
   S.party.forEach((m, i) => {
     ['caps','conds','allergs'].forEach(k => m[k] = m[k] || []);
     box.append(h('div', {class:'member'},
       h('h3', {}, h('span', {}, 'Member ' + (i+1)),
-        S.party.length > 1 ? h('button', {class:'danger small', onclick:() => { if (confirm('Remove this member?')) { S.party.splice(i,1); save(); renderParty(); } }}, 'Remove') : ''),
+        S.party.length > 1 ? rmBtn(() => { if (confirm('Remove this member?')) { S.party.splice(i,1); save(); renderParty(); } }) : ''),
       h('div', {class:'grid'},
         field('Name', txt(m.name, v => m.name = v)),
         field('Mobile', txt(m.phone, v => m.phone = v, 'tel')),
         field('Age group', sel(AGES, m.age, v => { m.age = v; save(); })),
         field('Role', sel(ROLES, m.role, v => { m.role = v; save(); })),
+        field('Years hunting', sel(YEARS, m.yrs, v => { m.yrs = v; save(); })),
+        field('Fitness', sel(FITNESS, m.fit, v => { m.fit = v; save(); })),
+        field('Familiar with this area', sel(KNOWS, m.knows, v => { m.knows = v; save(); })),
+        field('Blood type', sel(BLOOD, m.blood, v => { m.blood = v; save(); })),
         field('Capabilities', chipGroup(CAPS, m.caps, save), true),
         field('Other skills / limitations', area(m.capsOther, v => m.capsOther = v), true),
         field('Medical conditions', chipGroup(CONDS, m.conds, save), true),
         field('Other medical details (injuries, surgery)', area(m.cond, v => m.cond = v), true),
         field('Allergies', chipGroup(ALLERGS, m.allergs, save), true),
         field('Other allergy details', txt(m.allergy, v => m.allergy = v)),
-        field('Blood type', sel(BLOOD, m.blood, v => { m.blood = v; save(); })),
         field('Regular medication and dose', area(m.meds, v => m.meds = v), true),
         field('Their emergency contact', txt(m.ecn, v => m.ecn = v)),
         field('Contact phone', txt(m.ecp, v => m.ecp = v, 'tel'))
@@ -402,7 +589,7 @@ function addMember(){ S.party.push(blankMember()); save(); renderParty(); }
 
 // Inventory
 function renderCats(){
-  const box = document.getElementById('cats'); box.innerHTML = '';
+  const box = $('cats'); box.innerHTML = '';
   S.cats.forEach((c, ci) => {
     const count = h('span', {class:'count'});
     const list = h('div');
@@ -414,10 +601,13 @@ function renderCats(){
         const nm = h('input', {type:'text', class:'nm', placeholder:'Item'}); nm.value = it.t;
         const q = sel(QTY, it.q, v => { it.q = v; save(); }, 'Qty');
         const n = h('input', {type:'text', class:'nt', placeholder:'Notes'}); n.value = it.n;
-        const row = h('div', {class:'item' + (it.done ? ' done' : '')},
+        const bx = h('input', {type:'checkbox', checked: !!it.b});
+        const row = h('div', {class:'item' + (it.b ? ' tobuy' : '')},
           cb, h('div', {}, nm, it.s ? h('span', {class:'tag noprint'}, 'suggested') : ''), q, n,
+          h('label', {class:'buy', title:'Still need to buy'}, bx, 'Buy'),
           h('button', {class:'x', title:'Delete item', onclick:() => { c.items.splice(ii,1); save(); drawItems(); upd(); overall(); }}, '×'));
-        cb.addEventListener('change', () => { it.done = cb.checked; row.classList.toggle('done', it.done); save(); upd(); overall(); });
+        cb.addEventListener('change', () => { it.done = cb.checked; save(); upd(); overall(); });
+        bx.addEventListener('change', () => { it.b = bx.checked; row.classList.toggle('tobuy', it.b); save(); overall(); });
         nm.addEventListener('input', () => { it.t = nm.value; save(); });
         n.addEventListener('input', () => { it.n = n.value; save(); });
         list.append(row);
@@ -427,7 +617,7 @@ function renderCats(){
     title.addEventListener('input', () => { c.name = title.value; save(); });
     box.append(h('div', {class:'cat'},
       h('div', {class:'cat-head'}, title, count,
-        h('button', {class:'ghost small', onclick:() => { c.items.push({t:'',q:'',n:'',done:false,s:false}); save(); drawItems(); upd(); overall(); const l = list.querySelector('.item:last-child .nm'); if (l) l.focus(); }}, '+ Item'),
+        h('button', {class:'ghost small', onclick:() => { c.items.push({t:'',q:'',n:'',done:false,s:false,b:false}); save(); drawItems(); upd(); overall(); const l = list.querySelector('.item:last-child .nm'); if (l) l.focus(); }}, '+ Item'),
         h('button', {class:'danger small', title:'Delete category', onclick:() => { if (confirm('Delete category "' + c.name + '"?')) { S.cats.splice(ci,1); save(); renderCats(); } }}, 'Delete')),
       list));
     drawItems(); upd();
@@ -435,11 +625,12 @@ function renderCats(){
   overall();
 }
 function overall(){
-  const all = S.cats.flatMap(c => c.items), done = all.filter(i => i.done).length;
-  document.getElementById('overall').textContent = done + ' carried of ' + all.length + ' listed';
+  const all = S.cats.flatMap(c => c.items), done = all.filter(i => i.done).length, buy = all.filter(i => i.b && !i.done).length;
+  $('overall').textContent = done + ' carried of ' + all.length + ' listed';
+  $('tobuy').textContent = buy ? ' · ' + buy + ' to buy' : '';
   document.querySelectorAll('.cat').forEach((el, i) => { const c = S.cats[i]; if (c) el.querySelector('.count').textContent = c.items.filter(x => x.done).length + ' / ' + c.items.length; });
 }
-function addCat(){ S.cats.push({name:'New category', items:[{t:'',q:'',n:'',done:false,s:false}]}); save(); renderCats(); }
+function addCat(){ S.cats.push({name:'New category', items:[{t:'',q:'',n:'',done:false,s:false,b:false}]}); save(); renderCats(); }
 
 // Actions
 function untickAll(){ if (confirm('Mark every item as not carried?')) { S.cats.forEach(c => c.items.forEach(i => i.done = false)); save(); renderCats(); } }
@@ -456,6 +647,7 @@ function importJson(ev){
   r.readAsText(f);
 }
 function doPrint(){ window.print(); }
+
 // Print only what has been filled in
 function cellEmpty(cell){
   if (cell.querySelector('.chip')) return !cell.querySelector('.chip.on');
@@ -463,9 +655,7 @@ function cellEmpty(cell){
 }
 function hide(el){ el.classList.add('ph'); }
 function prepPrint(){
-  // empty fields
   document.querySelectorAll('.grid > div').forEach(cell => { if (cell.querySelector('label.f') && cellEmpty(cell)) hide(cell); });
-  // party members with nothing filled
   document.querySelectorAll('.member').forEach(m => { if ([...m.querySelectorAll('.grid > div')].every(c => c.classList.contains('ph'))) hide(m); });
   // inventory: keep carried (ticked) items, or items with a quantity or note
   document.querySelectorAll('.cat').forEach(cat => {
@@ -481,20 +671,22 @@ function prepPrint(){
   // sections with nothing left (the emergency plan always prints)
   document.querySelectorAll('section').forEach(sec => {
     if (sec.querySelector('.sos')) return;
-    const parts = [...sec.querySelectorAll('.grid > div, .member, .cat, textarea:not(.grid textarea)')].filter(el => !el.closest('.member') || el.classList.contains('member'));
+    if (sec.id === 'mapsSec') { if (!S.maps.length) hide(sec); return; }
     const notesOnly = sec.querySelector(':scope > textarea');
     if (notesOnly) { if (!notesOnly.value.trim()) hide(sec); return; }
-    if (parts.length && parts.every(p => p.classList.contains('ph'))) hide(sec);
+    const parts = [...sec.querySelectorAll('.grid > div, .member, .cat')].filter(el => !el.closest('.member') || el.classList.contains('member'));
+    if (!parts.length || parts.every(p => p.classList.contains('ph'))) hide(sec);
   });
 }
 window.addEventListener('beforeprint', () => {
   growAll();
-  document.getElementById('printhead').textContent = 'Printed ' + new Date().toLocaleString() + (S.f.tripName ? ' | ' + S.f.tripName : '');
+  $('printhead').textContent = 'Printed ' + new Date().toLocaleString() + (S.f.tripName ? ' | ' + S.f.tripName : '');
   prepPrint();
 });
 window.addEventListener('afterprint', () => document.querySelectorAll('.ph').forEach(el => el.classList.remove('ph')));
 
-renderParty(); renderCats(); growAll();
+renderDays(); renderBooks(); renderContacts(); renderLocs(); renderMaps(); renderParty(); renderCats(); growAll();
+save();
 </script>
 </body>
 </html>
