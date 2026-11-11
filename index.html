@@ -43,12 +43,14 @@
   .item { display:grid; grid-template-columns:24px 1fr 76px 1fr 32px; gap:6px; align-items:center; padding:2px 0; }
   .item input[type=checkbox] { width:18px; height:18px; accent-color:var(--accent); }
   .item input[type=text], .item select { margin:0; padding:4px 6px; min-height:32px; }
-  .item.done .nm { text-decoration:line-through; color:var(--muted); }
   .item .x { background:none; border:none; color:var(--warn); padding:0; font-size:20px; }
   .tag { font-size:10px; background:#e8efe3; color:var(--accent); border-radius:4px; padding:0 4px; margin-left:4px; }
   .note { font-size:13px; color:var(--muted); }
   .sos { border-left:4px solid var(--warn); background:#fff6f2; padding:8px 12px; border-radius:4px; font-size:13px; margin-bottom:10px; }
   .printhead { display:none; }
+  .maplinks { display:flex; flex-wrap:wrap; gap:6px 16px; margin-top:8px; font-size:13px; }
+  .maplinks:empty { display:none; }
+  .maplinks a { color:var(--accent); font-weight:600; }
 
   @media (max-width:600px) {
     .wrap { padding:10px; }
@@ -72,6 +74,8 @@
     header, .toolbar, .noprint, .item .x, .cat-head button, .member h3 button { display:none !important; }
     .printhead { display:block; font-size:11px; color:#444; margin-bottom:6px; }
     .ph { display:none !important; }
+    .maplinks a { color:#000; text-decoration:none; }
+    .maplinks a::after { content:" (" attr(href) ")"; font-weight:400; font-size:9px; color:#444; word-break:break-all; }
     .wrap { max-width:none; padding:0; }
     section { border:1px solid #999; margin:8px 0; padding:8px 10px; break-inside:auto; }
     .member, .cat { break-inside:avoid; }
@@ -91,7 +95,7 @@
 <body>
 <header><div class="wrap" style="padding-top:0;padding-bottom:0">
   <h1>Hunting Trip Planner</h1>
-  <p>Trip plan, party details and kit checklist. Share the PDF with your emergency contact.</p>
+  <p>Trip plan, party details and kit inventory. Share the PDF with your emergency contact.</p>
 </div></header>
 
 <div class="wrap">
@@ -100,7 +104,7 @@
     <button class="ghost" onclick="exportJson()">Export backup</button>
     <button class="ghost" onclick="document.getElementById('imp').click()">Import backup</button>
     <input id="imp" type="file" accept="application/json" style="display:none" onchange="importJson(event)">
-    <button class="ghost" onclick="untickAll()">Untick all</button>
+    <button class="ghost" onclick="untickAll()">Mark none carried</button>
     <button class="danger" onclick="resetAll()">Clear everything</button>
     <span id="saved"></span>
   </div>
@@ -130,7 +134,8 @@
   </section>
 
   <section>
-    <h2>Locations and coordinates</h2>
+    <h2>Locations and maps</h2>
+    <div class="note noprint" style="margin-bottom:8px">Enter coordinates for each place. A Google Maps link builds automatically from decimal lat/long (e.g. -41.2865, 174.7762); for NZTM, paste a share link instead. Topo50 grid ref and map link are optional. <a href="https://www.linz.govt.nz/products-services/maps/new-zealand-topographic-maps/topo50-map-chooser/topo50-sheet-index" target="_blank" rel="noopener">Find your Topo50 sheet</a></div>
     <div class="grid">
       <div class="span2"><label class="f">Coordinate format used below</label>
         <select data-k="coordFmt">
@@ -139,13 +144,9 @@
           <option>Lat / long (decimal degrees, WGS84)</option>
           <option>Mixed (state format beside each)</option>
         </select></div>
-      <div><label class="f">Vehicle / trailhead</label><input type="text" data-k="c_vehicle"></div>
-      <div><label class="f">Camp / hut</label><input type="text" data-k="c_camp"></div>
-      <div><label class="f">Hunting area (centre)</label><input type="text" data-k="c_hunt"></div>
-      <div><label class="f">Bail-out / alternative exit</label><input type="text" data-k="c_bail"></div>
-      <div><label class="f">Water source</label><input type="text" data-k="c_water"></div>
       <div><label class="f">Map sheet(s)</label><input type="text" data-k="mapSheets" placeholder="e.g. Topo50 BT23"></div>
     </div>
+    <div id="locs"></div>
   </section>
 
   <section>
@@ -215,12 +216,11 @@
   </section>
 
   <section>
-    <h2>Kit checklist</h2>
-    <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>Packed</span><span id="overall"></span></div>
-    <div class="progress"><div id="bar"></div></div>
+    <h2>Kit inventory</h2>
+    <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>Items carried</span><span id="overall"></span></div>
     <div id="cats"></div>
     <button class="ghost noprint" onclick="addCat()">+ Add category</button>
-    <div class="note noprint" style="margin-top:8px">Items tagged <span class="tag">suggested</span> are reminders. Delete any you don't need.</div>
+    <div class="note noprint" style="margin-top:8px">Tick each item you are carrying and set the quantity. Items tagged <span class="tag">suggested</span> are reminders; delete any you don't need. Only carried items print.</div>
   </section>
 
   <section>
@@ -321,6 +321,21 @@ function chipGroup(opts, arr, onChange){
   return wrap;
 }
 
+// Locations: coordinates, Topo50 grid ref and map links
+const LOCS = [['vehicle','Vehicle / trailhead'],['camp','Camp / hut'],['hunt','Hunting area (centre)'],['bail','Bail-out / alternative exit'],['water','Water source']];
+(function(){
+  const box = document.getElementById('locs');
+  const dk = (key, lab, ph) => field(lab, h('input', {type:'text', 'data-k':key, placeholder:ph}));
+  LOCS.forEach(([k, label]) => box.append(h('div', {class:'member'},
+    h('h3', {}, h('span', {}, label)),
+    h('div', {class:'grid'},
+      dk('c_' + k, 'Coordinates', 'Lat/long or NZTM'),
+      dk('r_' + k, 'Topo50 grid ref', 'e.g. BT23 123 456'),
+      dk('g_' + k, 'Google Maps link (optional)', 'Paste link, or leave blank to build from lat/long'),
+      dk('t_' + k, 'Topo50 web map link (optional)', 'Paste link')),
+    h('div', {class:'maplinks', id:'ml_' + k}))));
+})();
+
 // Static fields (inputs, selects, textareas)
 document.querySelectorAll('[data-k]').forEach(el => {
   const v = S.f[el.dataset.k] || '';
@@ -328,6 +343,29 @@ document.querySelectorAll('[data-k]').forEach(el => {
   el.addEventListener('input', () => { S.f[el.dataset.k] = el.value; if (el.tagName === 'SELECT') markEmpty(el); if (el.tagName === 'TEXTAREA') grow(el); save(); });
 });
 document.getElementById('speciesChips').append(chipGroup(SPECIES, S.f.species, save));
+
+// Map links
+function parseLL(s){
+  const m = (s || '').match(/(-?\d{1,2}\.\d+)\s*[,; ]\s*(-?\d{1,3}\.\d+)/);
+  if (!m) return null;
+  const a = +m[1], b = +m[2];
+  return Math.abs(a) <= 90 && Math.abs(b) <= 180 ? [a, b] : null;
+}
+const isUrl = v => /^https?:\/\/\S+$/i.test((v || '').trim());
+function updLinks(k){
+  const box = document.getElementById('ml_' + k); box.innerHTML = '';
+  let g = (S.f['g_' + k] || '').trim();
+  const ll = parseLL(S.f['c_' + k]);
+  if (!isUrl(g)) g = ll ? 'https://www.google.com/maps?q=' + ll[0] + ',' + ll[1] : '';
+  const t = (S.f['t_' + k] || '').trim();
+  const add = (txt, url) => box.append(h('a', {href:url, target:'_blank', rel:'noopener'}, txt));
+  if (g) add('Open in Google Maps', g);
+  if (isUrl(t)) add('Open Topo50 map', t);
+}
+LOCS.forEach(([k]) => {
+  ['c_', 'g_', 't_'].forEach(p => document.querySelector('[data-k="' + p + k + '"]').addEventListener('input', () => updLinks(k)));
+  updLinks(k);
+});
 
 // Party
 function field(label, ctl, span){ return h('div', {class: span ? 'span2' : ''}, h('label', {class:'f'}, label), ctl); }
@@ -362,7 +400,7 @@ function renderParty(){
 }
 function addMember(){ S.party.push(blankMember()); save(); renderParty(); }
 
-// Checklist
+// Inventory
 function renderCats(){
   const box = document.getElementById('cats'); box.innerHTML = '';
   S.cats.forEach((c, ci) => {
@@ -372,7 +410,7 @@ function renderCats(){
     const drawItems = () => {
       list.innerHTML = '';
       c.items.forEach((it, ii) => {
-        const cb = h('input', {type:'checkbox', checked: it.done});
+        const cb = h('input', {type:'checkbox', checked: it.done, title:'Carrying this'});
         const nm = h('input', {type:'text', class:'nm', placeholder:'Item'}); nm.value = it.t;
         const q = sel(QTY, it.q, v => { it.q = v; save(); }, 'Qty');
         const n = h('input', {type:'text', class:'nt', placeholder:'Notes'}); n.value = it.n;
@@ -398,15 +436,14 @@ function renderCats(){
 }
 function overall(){
   const all = S.cats.flatMap(c => c.items), done = all.filter(i => i.done).length;
-  document.getElementById('overall').textContent = done + ' of ' + all.length + ' (' + (all.length ? Math.round(done/all.length*100) : 0) + '%)';
-  document.getElementById('bar').style.width = (all.length ? done/all.length*100 : 0) + '%';
+  document.getElementById('overall').textContent = done + ' carried of ' + all.length + ' listed';
   document.querySelectorAll('.cat').forEach((el, i) => { const c = S.cats[i]; if (c) el.querySelector('.count').textContent = c.items.filter(x => x.done).length + ' / ' + c.items.length; });
 }
 function addCat(){ S.cats.push({name:'New category', items:[{t:'',q:'',n:'',done:false,s:false}]}); save(); renderCats(); }
 
 // Actions
-function untickAll(){ if (confirm('Untick every item?')) { S.cats.forEach(c => c.items.forEach(i => i.done = false)); save(); renderCats(); } }
-function resetAll(){ if (confirm('Clear ALL trip details and restore the default checklist?')) { S = fresh(); save(); location.reload(); } }
+function untickAll(){ if (confirm('Mark every item as not carried?')) { S.cats.forEach(c => c.items.forEach(i => i.done = false)); save(); renderCats(); } }
+function resetAll(){ if (confirm('Clear ALL trip details and restore the default inventory?')) { S = fresh(); save(); location.reload(); } }
 function exportJson(){
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([JSON.stringify(S, null, 2)], {type:'application/json'}));
@@ -430,7 +467,7 @@ function prepPrint(){
   document.querySelectorAll('.grid > div').forEach(cell => { if (cell.querySelector('label.f') && cellEmpty(cell)) hide(cell); });
   // party members with nothing filled
   document.querySelectorAll('.member').forEach(m => { if ([...m.querySelectorAll('.grid > div')].every(c => c.classList.contains('ph'))) hide(m); });
-  // checklist: keep ticked items, or items with a quantity or note
+  // inventory: keep carried (ticked) items, or items with a quantity or note
   document.querySelectorAll('.cat').forEach(cat => {
     let shown = 0;
     cat.querySelectorAll('.item').forEach(row => {
