@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hunting Trip Planner</title>
+<style>
+  :root { --bg:#f4f1ea; --card:#fff; --ink:#1f2a24; --muted:#66706a; --accent:#2f5d3a; --line:#d8d4c8; --warn:#a33a1f; }
+  * { box-sizing:border-box; }
+  html { -webkit-text-size-adjust:100%; }
+  body { margin:0; font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif; background:var(--bg); color:var(--ink); }
+  .wrap { max-width:960px; margin:0 auto; padding:16px; }
+  header { background:var(--accent); color:#fff; padding:18px 0; }
+  header h1 { margin:0; font-size:22px; }
+  header p { margin:4px 0 0; opacity:.85; font-size:13px; }
+  .toolbar { display:flex; flex-wrap:wrap; gap:8px; margin:14px 0; align-items:center; }
+  button { font:inherit; padding:8px 12px; border:1px solid var(--accent); background:var(--accent); color:#fff; border-radius:6px; cursor:pointer; }
+  button.ghost { background:#fff; color:var(--accent); }
+  button.danger { background:#fff; color:var(--warn); border-color:var(--warn); }
+  button.small { padding:4px 9px; font-size:13px; }
+  #saved { color:var(--muted); font-size:13px; margin-left:auto; }
+  section { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:14px 16px; margin:14px 0; }
+  section h2 { margin:0 0 10px; font-size:17px; color:var(--accent); border-bottom:2px solid var(--accent); padding-bottom:4px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:10px 14px; }
+  .span2 { grid-column:1 / -1; }
+  label.f { display:block; font-size:12px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:.03em; }
+  input[type=text], input[type=date], input[type=time], input[type=tel], textarea, select {
+    width:100%; font:inherit; padding:7px 8px; border:1px solid var(--line); border-radius:6px; background:#fff; color:var(--ink); margin-top:3px; min-height:36px; }
+  select.empty { color:var(--muted); }
+  textarea { resize:vertical; min-height:38px; overflow:hidden; }
+  .member { border:1px solid var(--line); border-radius:8px; padding:12px; margin:10px 0; background:#fbfaf6; }
+  .member h3 { margin:0 0 8px; font-size:15px; display:flex; justify-content:space-between; align-items:center; }
+  .chips { display:flex; flex-wrap:wrap; gap:6px; margin-top:4px; }
+  .chip { border:1px solid var(--line); border-radius:999px; padding:5px 12px; font-size:13px; background:#fff; cursor:pointer; user-select:none; }
+  .chip.on { background:var(--accent); color:#fff; border-color:var(--accent); }
+  .chip input { display:none; }
+  .progress { height:10px; background:#e5e1d5; border-radius:6px; overflow:hidden; }
+  .progress > div { height:100%; background:var(--accent); width:0; transition:width .2s; }
+  .cat { border:1px solid var(--line); border-radius:8px; margin:12px 0; padding:10px 12px; break-inside:avoid; }
+  .cat-head { display:flex; gap:8px; align-items:center; margin-bottom:6px; }
+  .cat-head input { flex:1; min-width:0; font-weight:700; font-size:15px; border:none; border-bottom:1px dashed var(--line); margin:0; background:transparent; }
+  .count { font-size:13px; color:var(--muted); white-space:nowrap; }
+  .item { display:grid; grid-template-columns:24px 1fr 76px 1fr 32px; gap:6px; align-items:center; padding:2px 0; }
+  .item input[type=checkbox] { width:18px; height:18px; accent-color:var(--accent); }
+  .item input[type=text], .item select { margin:0; padding:4px 6px; min-height:32px; }
+  .item.done .nm { text-decoration:line-through; color:var(--muted); }
+  .item .x { background:none; border:none; color:var(--warn); padding:0; font-size:20px; }
+  .tag { font-size:10px; background:#e8efe3; color:var(--accent); border-radius:4px; padding:0 4px; margin-left:4px; }
+  .note { font-size:13px; color:var(--muted); }
+  .sos { border-left:4px solid var(--warn); background:#fff6f2; padding:8px 12px; border-radius:4px; font-size:13px; margin-bottom:10px; }
+  .printhead { display:none; }
+
+  @media (max-width:600px) {
+    .wrap { padding:10px; }
+    section { padding:12px; }
+    .grid { grid-template-columns:1fr; }
+    input[type=text], input[type=date], input[type=time], input[type=tel], textarea, select { font-size:16px; }
+    .toolbar button { flex:1 1 45%; }
+    #saved { width:100%; margin:0; }
+    .item { grid-template-columns:28px 1fr 72px 32px; row-gap:4px; padding:4px 0; border-bottom:1px solid #eee; }
+    .item .nt { grid-column:2 / 4; grid-row:2; }
+    .item .x { grid-column:4; grid-row:1; }
+    .item input[type=checkbox] { width:22px; height:22px; }
+    .cat-head { flex-wrap:wrap; }
+    .cat-head input { flex:1 1 100%; }
+    .chip { padding:7px 12px; }
+  }
+
+  @media print {
+    @page { size:A4; margin:12mm; }
+    body { background:#fff; font-size:11px; }
+    header, .toolbar, .noprint, .item .x, .cat-head button, .member h3 button { display:none !important; }
+    .printhead { display:block; font-size:11px; color:#444; margin-bottom:6px; }
+    .wrap { max-width:none; padding:0; }
+    section { border:1px solid #999; margin:8px 0; padding:8px 10px; break-inside:auto; }
+    .member, .cat { break-inside:avoid; }
+    .grid { grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); }
+    input[type=text], input[type=date], input[type=time], input[type=tel], textarea, select { border:none; border-bottom:1px solid #ccc; border-radius:0; padding:2px 0; min-height:0; appearance:none; -webkit-appearance:none; font-size:11px; }
+    select.empty { color:transparent; }
+    .chip:not(.on) { display:none; }
+    .chip.on { background:none; color:#000; border:1px solid #000; padding:1px 8px; }
+    .item { grid-template-columns:20px 1fr 50px 1fr; padding:1px 0; border:none; }
+    .item .nt { grid-column:auto; grid-row:auto; }
+    .item input[type=checkbox] { width:14px; height:14px; }
+    .progress { border:1px solid #999; }
+    .progress > div { background:#555 !important; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  }
+</style>
+</head>
+<body>
+<header><div class="wrap" style="padding-top:0;padding-bottom:0">
+  <h1>Hunting Trip Planner</h1>
+  <p>Trip plan, party details and kit checklist. Share the PDF with your emergency contact.</p>
+</div></header>
+
+<div class="wrap">
+  <div class="toolbar">
+    <button onclick="doPrint()">Print / Save as PDF</button>
+    <button class="ghost" onclick="exportJson()">Export backup</button>
+    <button class="ghost" onclick="document.getElementById('imp').click()">Import backup</button>
+    <input id="imp" type="file" accept="application/json" style="display:none" onchange="importJson(event)">
+    <button class="ghost" onclick="untickAll()">Untick all</button>
+    <button class="danger" onclick="resetAll()">Clear everything</button>
+    <span id="saved"></span>
+  </div>
+
+  <div class="printhead" id="printhead"></div>
+
+  <section>
+    <h2>Trip overview</h2>
+    <div class="grid">
+      <div class="span2"><label class="f">Trip name</label><input type="text" data-k="tripName"></div>
+      <div><label class="f">Start date</label><input type="date" data-k="dateStart"></div>
+      <div><label class="f">End date</label><input type="date" data-k="dateEnd"></div>
+      <div><label class="f">Place / block / hut</label><input type="text" data-k="place"></div>
+      <div><label class="f">Land type</label>
+        <select data-k="landType">
+          <option value="">Select…</option>
+          <option>DOC conservation land</option>
+          <option>Private land (permission)</option>
+          <option>Forestry block</option>
+          <option>Iwi / other land</option>
+        </select></div>
+      <div><label class="f">Permit / access ref</label><input type="text" data-k="permitRef"></div>
+      <div class="span2"><label class="f">Target species</label><div class="chips" id="speciesChips"></div></div>
+      <div class="span2"><label class="f">Plan (day by day)</label><textarea data-k="plan" placeholder="Day 1: drive in, hike to camp...&#10;Day 2: ..."></textarea></div>
+      <div class="span2"><label class="f">Route and bail-out options</label><textarea data-k="route" placeholder="Planned route, alternative exits, river crossings, no-go conditions"></textarea></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Locations and coordinates</h2>
+    <div class="grid">
+      <div class="span2"><label class="f">Coordinate format used below</label>
+        <select data-k="coordFmt">
+          <option value="">Select…</option>
+          <option>NZTM2000 (easting / northing)</option>
+          <option>Lat / long (decimal degrees, WGS84)</option>
+          <option>Mixed (state format beside each)</option>
+        </select></div>
+      <div><label class="f">Vehicle / trailhead</label><input type="text" data-k="c_vehicle"></div>
+      <div><label class="f">Camp / hut</label><input type="text" data-k="c_camp"></div>
+      <div><label class="f">Hunting area (centre)</label><input type="text" data-k="c_hunt"></div>
+      <div><label class="f">Bail-out / alternative exit</label><input type="text" data-k="c_bail"></div>
+      <div><label class="f">Water source</label><input type="text" data-k="c_water"></div>
+      <div><label class="f">Map sheet(s)</label><input type="text" data-k="mapSheets" placeholder="e.g. Topo50 BT23"></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Safety and emergency plan</h2>
+    <div class="sos">If I have not made contact by the return time below, contact NZ Police on <b>111</b> and give them this sheet. Ask for Land Search and Rescue.</div>
+    <div class="grid">
+      <div><label class="f">Expected return (date)</label><input type="date" data-k="returnDate"></div>
+      <div><label class="f">Expected return (time)</label><input type="time" data-k="returnTime"></div>
+      <div><label class="f">Raise alarm after</label>
+        <select data-k="alarmAfter">
+          <option value="">Select…</option>
+          <option>2 hours after return time</option>
+          <option>Evening of return day</option>
+          <option>Next morning</option>
+          <option>24 hours after return time</option>
+        </select></div>
+      <div><label class="f">Check-in schedule</label>
+        <select data-k="checkin">
+          <option value="">Select…</option>
+          <option>No check-ins (no signal)</option>
+          <option>Daily</option>
+          <option>Every second day</option>
+          <option>Once at end of trip</option>
+          <option>Other (see notes)</option>
+        </select></div>
+      <div><label class="f">Phone coverage expected</label>
+        <select data-k="coverage">
+          <option value="">Select…</option>
+          <option>None</option>
+          <option>Patchy</option>
+          <option>Good</option>
+        </select></div>
+      <div><label class="f">PLB carried</label>
+        <select data-k="plbCarried">
+          <option value="">Select…</option>
+          <option>Yes</option>
+          <option>No</option>
+        </select></div>
+      <div><label class="f">PLB registration / hex ID</label><input type="text" data-k="plbId"></div>
+      <div><label class="f">Radio channel / frequency</label><input type="text" data-k="radio"></div>
+      <div><label class="f">Vehicle make, colour, rego</label><input type="text" data-k="vehicle"></div>
+      <div><label class="f">Vehicle parked at</label><input type="text" data-k="vehicleAt"></div>
+      <div class="span2"><label class="f">Nearest hospital / medical centre</label><input type="text" data-k="hospital"></div>
+      <div class="span2"><label class="f">Weather forecast and river / fire notes</label><textarea data-k="weather"></textarea></div>
+      <div class="span2"><label class="f">Firearm details (make, calibre, serial, licence no.)</label><textarea data-k="firearms" placeholder="e.g. Tikka T3x, calibre, serial, licence number"></textarea></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Emergency contacts (not on the trip)</h2>
+    <div class="grid">
+      <div><label class="f">Primary contact name</label><input type="text" data-k="ec1n"></div>
+      <div><label class="f">Phone</label><input type="tel" data-k="ec1p"></div>
+      <div><label class="f">Relationship</label>
+        <select data-k="ec1r"><option value="">Select…</option><option>Partner</option><option>Parent</option><option>Sibling</option><option>Child</option><option>Friend</option><option>Other</option></select></div>
+      <div><label class="f">Secondary contact name</label><input type="text" data-k="ec2n"></div>
+      <div><label class="f">Phone</label><input type="tel" data-k="ec2p"></div>
+      <div><label class="f">Relationship</label>
+        <select data-k="ec2r"><option value="">Select…</option><option>Partner</option><option>Parent</option><option>Sibling</option><option>Child</option><option>Friend</option><option>Other</option></select></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Party, capabilities and medical</h2>
+    <div id="party"></div>
+    <button class="ghost noprint" onclick="addMember()">+ Add party member</button>
+  </section>
+
+  <section>
+    <h2>Kit checklist</h2>
+    <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>Packed</span><span id="overall"></span></div>
+    <div class="progress"><div id="bar"></div></div>
+    <div id="cats"></div>
+    <button class="ghost noprint" onclick="addCat()">+ Add category</button>
+    <div class="note noprint" style="margin-top:8px">Items tagged <span class="tag">suggested</span> are reminders. Delete any you don't need.</div>
+  </section>
+
+  <section>
+    <h2>Other notes</h2>
+    <textarea data-k="notes" placeholder="Anything else the emergency contact should know"></textarea>
+  </section>
+</div>
+
+<script>
+const KEY = 'huntTripPlanner.v2', OLDKEY = 'huntTripPlanner.v1';
+const SPECIES = ['Red deer','Fallow','Sika','Sambar','Chamois','Tahr','Pig','Goat','Waterfowl','Other'];
+const CAPS = ['Firearms licence','First aid trained','Navigation (map/GPS)','Radio / PLB operation','Experienced hunter','Game recovery / butchery','Strong swimmer','River crossing experience','Driver (4WD)','Fire / shelter skills'];
+const CONDS = ['None known','Asthma','Diabetes','Heart condition','High blood pressure','Epilepsy','Anaphylaxis risk','Back / joint issues'];
+const ALLERGS = ['None known','Penicillin','Bee / wasp','Nuts','Latex','Sandfly reactions'];
+const AGES = ['Under 18','18–29','30–39','40–49','50–59','60+'];
+const ROLES = ['Trip leader','Experienced hunter','Novice','Guest / observer'];
+const BLOOD = ['A+','A−','B+','B−','AB+','AB−','O+','O−','Unknown'];
+const QTY = ['1','2','3','4','5','6','7','8','9','10','12','15','20'];
+
+// [name, suggested?]  (quantities start blank)
+const DEF_CATS = [
+ ['Camp', [['Tent'],['Hammer'],['Sleeping bag'],['Mattress'],['Headlamp'],['Tent lamp'],['Tarps'],['Pillow'],['Spare batteries',1],['Tent pegs / spare guy line',1]]],
+ ['Toiletries', [['Toilet tissue'],['Wipes'],['Hand wash'],['Hand sanitiser'],['Body wash / shampoo'],['Toothbrush'],['Toothpaste'],['Towel'],['Trowel',1]]],
+ ['First aid / medicine', [['Paracetamol'],['Brufen'],['Tday / anti-allergy'],['Nibrol Forte'],['Hydrosol / rash'],['Flagyl'],['Energy capsules'],['Electrolyte powder'],['Sun screen'],['Sandfly spray'],['Bandage'],['Compression bandage / tourniquet',1],['Blister plasters',1],['Scissors / tweezers',1],['Personal prescription meds',1],['Water purification tablets / filter',1]]],
+ ['Food', [['Tea bags / decaf coffee / green tea'],['Sugar'],['Salt'],['Black pepper'],['Milk (long life / powder)'],['Wraps / roti'],['Ready rice'],['Ready daal'],['Chicken tin'],['Cooked chicken'],['Ketchup'],['Mayo'],['Oat bar'],['Chocolate bar'],['Marinated lamb'],['Coke'],['Dates / snacks'],['Emergency food (extra day)',1]]],
+ ['Utensils / cooking / misc', [['Pots'],['Stove / gas'],['Spoons'],['Garbage bags'],['Lighter'],['Water container'],['Multi tool'],['Pen'],['Notebook'],['Tape'],['Power bank'],['Charger'],['Spare lighter / firelighters',1],['Whistle',1]]],
+ ['Hunting', [['Survival blanket'],['Plastic bag (meat)'],['Meat sack'],['Pull-through'],['Range finder'],['Tikka T3x'],['Suppressor'],['Ammo'],['Cleaning kit'],['Knife (small)'],['Knife (big)'],['Knife sharpener'],['Emergency shelter'],['Dry bag'],['Hunting permit'],['Gun licence'],['Rope / paracord'],['Bum bag'],['Hydration bladder'],['Bivvy string'],['Map, ruler, pencil'],['PLB'],['Radio'],['GPS'],['Chamber flag'],['Binoculars',1],['Ear protection',1]]],
+ ['Clothing', [['Polyprop T-shirt'],['Sweatshirt'],['Thermal shirt'],['Trousers'],['Windbreaker'],['Fleece liner'],['Waterproof upper'],['Waterproof trousers'],['Waterproof socks'],['Wool socks'],['Beanie'],['Gloves'],['Camp trousers'],['Camp T-shirt'],['Camp fleece / hoody'],['Gumboots / crocs'],['Hunting boots'],['High viz jacket'],['High viz cap'],['Gators'],['Spare dry set (sealed in dry bag)',1]]],
+ ['Vehicle and paperwork', [['Fuel (enough for return)',1],['Spare tyre / jack',1],['Photo ID',1],['Cash / card',1],['Landowner / DOC permission',1],['Printed copy of this plan left with contact',1]]]
+];
+
+function mkCats(){ return DEF_CATS.map(([name,items]) => ({ name, items: items.map(([t,s]) => ({ t, q:'', n:'', done:false, s:!!s })) })); }
+function blankMember(){ return { name:'', age:'', phone:'', role:'', blood:'', caps:[], capsOther:'', conds:[], cond:'', allergs:[], allergy:'', meds:'', ecn:'', ecp:'' }; }
+function fresh(){ return { f:{}, party:[blankMember()], cats:mkCats() }; }
+
+// Load (migrates v1 data: clears old quantities, renames and adds the new items)
+let S = null;
+try { S = JSON.parse(localStorage.getItem(KEY)); } catch(e){}
+if (!S) {
+  try {
+    const old = JSON.parse(localStorage.getItem(OLDKEY));
+    if (old && old.cats) {
+      old.cats.forEach(c => c.items.forEach(i => { i.q = ''; if (i.t === 'Sunscreen') i.t = 'Sun screen'; if (i.t === 'Bolt / chamber flag') { i.t = 'Chamber flag'; i.s = false; } if (i.t === 'Blaze orange / high-vis') { i.t = 'High viz jacket'; i.s = false; } }));
+      [['First aid / medicine','Sun screen'],['Hunting','Chamber flag'],['Clothing','High viz jacket'],['Clothing','High viz cap'],['Clothing','Gators']].forEach(([cn,it]) => {
+        const c = old.cats.find(x => x.name === cn);
+        if (c && !c.items.some(x => x.t.toLowerCase() === it.toLowerCase())) c.items.push({ t:it, q:'', n:'', done:false, s:false });
+      });
+      S = old;
+    }
+  } catch(e){}
+}
+if (!S || !S.cats) S = fresh();
+S.f = S.f || {}; S.party = S.party && S.party.length ? S.party : [blankMember()];
+S.f.species = S.f.species || [];
+
+function save(){
+  try { localStorage.setItem(KEY, JSON.stringify(S)); document.getElementById('saved').textContent = 'Saved ' + new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}); }
+  catch(e){ document.getElementById('saved').textContent = 'Could not save (storage blocked)'; }
+}
+
+function h(tag, attrs, ...kids){
+  const e = document.createElement(tag);
+  for (const k in (attrs||{})) {
+    if (k === 'class') e.className = attrs[k];
+    else if (k.startsWith('on')) e.addEventListener(k.slice(2), attrs[k]);
+    else if (k === 'value') e.value = attrs[k];
+    else if (k === 'checked') e.checked = attrs[k];
+    else e.setAttribute(k, attrs[k]);
+  }
+  kids.flat().forEach(c => e.append(c && c.nodeType ? c : document.createTextNode(c ?? '')));
+  return e;
+}
+function grow(t){ t.style.height = 'auto'; t.style.height = (t.scrollHeight + 2) + 'px'; }
+function growAll(){ document.querySelectorAll('textarea').forEach(grow); }
+function markEmpty(s){ s.classList.toggle('empty', !s.value); }
+function setSel(s, v){
+  v = v || '';
+  if (v && ![...s.options].some(o => o.value === v)) s.append(h('option', {value:v}, v));
+  s.value = v; markEmpty(s);
+}
+function sel(opts, val, cb, placeholder){
+  const s = h('select', {}, h('option', {value:''}, placeholder || 'Select…'), opts.map(o => h('option', {value:o}, o)));
+  setSel(s, val);
+  s.addEventListener('change', () => { markEmpty(s); cb(s.value); });
+  return s;
+}
+function chipGroup(opts, arr, onChange){
+  const wrap = h('div', {class:'chips'});
+  opts.forEach(o => {
+    const on = arr.includes(o);
+    const lab = h('label', {class:'chip' + (on ? ' on' : '')}, h('input', {type:'checkbox', checked:on}), o);
+    lab.querySelector('input').addEventListener('change', e => {
+      if (e.target.checked) { if (!arr.includes(o)) arr.push(o); } else { const i = arr.indexOf(o); if (i > -1) arr.splice(i, 1); }
+      lab.classList.toggle('on', e.target.checked); onChange();
+    });
+    wrap.append(lab);
+  });
+  return wrap;
+}
+
+// Static fields (inputs, selects, textareas)
+document.querySelectorAll('[data-k]').forEach(el => {
+  const v = S.f[el.dataset.k] || '';
+  if (el.tagName === 'SELECT') setSel(el, v); else el.value = v;
+  el.addEventListener('input', () => { S.f[el.dataset.k] = el.value; if (el.tagName === 'SELECT') markEmpty(el); if (el.tagName === 'TEXTAREA') grow(el); save(); });
+});
+document.getElementById('speciesChips').append(chipGroup(SPECIES, S.f.species, save));
+
+// Party
+function field(label, ctl, span){ return h('div', {class: span ? 'span2' : ''}, h('label', {class:'f'}, label), ctl); }
+function txt(val, cb, type){ const el = h('input', {type:type || 'text'}); el.value = val || ''; el.addEventListener('input', () => { cb(el.value); save(); }); return el; }
+function area(val, cb){ const el = h('textarea'); el.value = val || ''; el.addEventListener('input', () => { cb(el.value); grow(el); save(); }); return el; }
+
+function renderParty(){
+  const box = document.getElementById('party'); box.innerHTML = '';
+  S.party.forEach((m, i) => {
+    ['caps','conds','allergs'].forEach(k => m[k] = m[k] || []);
+    box.append(h('div', {class:'member'},
+      h('h3', {}, h('span', {}, 'Member ' + (i+1)),
+        S.party.length > 1 ? h('button', {class:'danger small', onclick:() => { if (confirm('Remove this member?')) { S.party.splice(i,1); save(); renderParty(); } }}, 'Remove') : ''),
+      h('div', {class:'grid'},
+        field('Name', txt(m.name, v => m.name = v)),
+        field('Mobile', txt(m.phone, v => m.phone = v, 'tel')),
+        field('Age group', sel(AGES, m.age, v => { m.age = v; save(); })),
+        field('Role', sel(ROLES, m.role, v => { m.role = v; save(); })),
+        field('Capabilities', chipGroup(CAPS, m.caps, save), true),
+        field('Other skills / limitations', area(m.capsOther, v => m.capsOther = v), true),
+        field('Medical conditions', chipGroup(CONDS, m.conds, save), true),
+        field('Other medical details (injuries, surgery)', area(m.cond, v => m.cond = v), true),
+        field('Allergies', chipGroup(ALLERGS, m.allergs, save), true),
+        field('Other allergy details', txt(m.allergy, v => m.allergy = v)),
+        field('Blood type', sel(BLOOD, m.blood, v => { m.blood = v; save(); })),
+        field('Regular medication and dose', area(m.meds, v => m.meds = v), true),
+        field('Their emergency contact', txt(m.ecn, v => m.ecn = v)),
+        field('Contact phone', txt(m.ecp, v => m.ecp = v, 'tel'))
+      )));
+  });
+  growAll();
+}
+function addMember(){ S.party.push(blankMember()); save(); renderParty(); }
+
+// Checklist
+function renderCats(){
+  const box = document.getElementById('cats'); box.innerHTML = '';
+  S.cats.forEach((c, ci) => {
+    const count = h('span', {class:'count'});
+    const list = h('div');
+    const upd = () => { count.textContent = c.items.filter(x => x.done).length + ' / ' + c.items.length; };
+    const drawItems = () => {
+      list.innerHTML = '';
+      c.items.forEach((it, ii) => {
+        const cb = h('input', {type:'checkbox', checked: it.done});
+        const nm = h('input', {type:'text', class:'nm', placeholder:'Item'}); nm.value = it.t;
+        const q = sel(QTY, it.q, v => { it.q = v; save(); }, 'Qty');
+        const n = h('input', {type:'text', class:'nt', placeholder:'Notes'}); n.value = it.n;
+        const row = h('div', {class:'item' + (it.done ? ' done' : '')},
+          cb, h('div', {}, nm, it.s ? h('span', {class:'tag noprint'}, 'suggested') : ''), q, n,
+          h('button', {class:'x', title:'Delete item', onclick:() => { c.items.splice(ii,1); save(); drawItems(); upd(); overall(); }}, '×'));
+        cb.addEventListener('change', () => { it.done = cb.checked; row.classList.toggle('done', it.done); save(); upd(); overall(); });
+        nm.addEventListener('input', () => { it.t = nm.value; save(); });
+        n.addEventListener('input', () => { it.n = n.value; save(); });
+        list.append(row);
+      });
+    };
+    const title = h('input', {type:'text'}); title.value = c.name;
+    title.addEventListener('input', () => { c.name = title.value; save(); });
+    box.append(h('div', {class:'cat'},
+      h('div', {class:'cat-head'}, title, count,
+        h('button', {class:'ghost small', onclick:() => { c.items.push({t:'',q:'',n:'',done:false,s:false}); save(); drawItems(); upd(); overall(); const l = list.querySelector('.item:last-child .nm'); if (l) l.focus(); }}, '+ Item'),
+        h('button', {class:'danger small', title:'Delete category', onclick:() => { if (confirm('Delete category "' + c.name + '"?')) { S.cats.splice(ci,1); save(); renderCats(); } }}, 'Delete')),
+      list));
+    drawItems(); upd();
+  });
+  overall();
+}
+function overall(){
+  const all = S.cats.flatMap(c => c.items), done = all.filter(i => i.done).length;
+  document.getElementById('overall').textContent = done + ' of ' + all.length + ' (' + (all.length ? Math.round(done/all.length*100) : 0) + '%)';
+  document.getElementById('bar').style.width = (all.length ? done/all.length*100 : 0) + '%';
+  document.querySelectorAll('.cat').forEach((el, i) => { const c = S.cats[i]; if (c) el.querySelector('.count').textContent = c.items.filter(x => x.done).length + ' / ' + c.items.length; });
+}
+function addCat(){ S.cats.push({name:'New category', items:[{t:'',q:'',n:'',done:false,s:false}]}); save(); renderCats(); }
+
+// Actions
+function untickAll(){ if (confirm('Untick every item?')) { S.cats.forEach(c => c.items.forEach(i => i.done = false)); save(); renderCats(); } }
+function resetAll(){ if (confirm('Clear ALL trip details and restore the default checklist?')) { S = fresh(); save(); location.reload(); } }
+function exportJson(){
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(S, null, 2)], {type:'application/json'}));
+  a.download = 'hunting-trip-' + (S.f.dateStart || 'backup') + '.json'; a.click();
+}
+function importJson(ev){
+  const f = ev.target.files[0]; if (!f) return;
+  const r = new FileReader();
+  r.onload = () => { try { const d = JSON.parse(r.result); if (!d.cats) throw 0; S = d; save(); location.reload(); } catch(e){ alert('That file is not a valid backup.'); } };
+  r.readAsText(f);
+}
+function doPrint(){ window.print(); }
+window.addEventListener('beforeprint', () => {
+  growAll();
+  document.getElementById('printhead').textContent = 'Printed ' + new Date().toLocaleString() + (S.f.tripName ? ' | ' + S.f.tripName : '');
+});
+
+renderParty(); renderCats(); growAll();
+</script>
+</body>
+</html>
