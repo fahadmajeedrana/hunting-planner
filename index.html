@@ -71,6 +71,7 @@
     body { background:#fff; font-size:11px; }
     header, .toolbar, .noprint, .item .x, .cat-head button, .member h3 button { display:none !important; }
     .printhead { display:block; font-size:11px; color:#444; margin-bottom:6px; }
+    .ph { display:none !important; }
     .wrap { max-width:none; padding:0; }
     section { border:1px solid #999; margin:8px 0; padding:8px 10px; break-inside:auto; }
     .member, .cat { break-inside:avoid; }
@@ -418,10 +419,43 @@ function importJson(ev){
   r.readAsText(f);
 }
 function doPrint(){ window.print(); }
+// Print only what has been filled in
+function cellEmpty(cell){
+  if (cell.querySelector('.chip')) return !cell.querySelector('.chip.on');
+  return [...cell.querySelectorAll('input,textarea,select')].every(c => !c.value);
+}
+function hide(el){ el.classList.add('ph'); }
+function prepPrint(){
+  // empty fields
+  document.querySelectorAll('.grid > div').forEach(cell => { if (cell.querySelector('label.f') && cellEmpty(cell)) hide(cell); });
+  // party members with nothing filled
+  document.querySelectorAll('.member').forEach(m => { if ([...m.querySelectorAll('.grid > div')].every(c => c.classList.contains('ph'))) hide(m); });
+  // checklist: keep ticked items, or items with a quantity or note
+  document.querySelectorAll('.cat').forEach(cat => {
+    let shown = 0;
+    cat.querySelectorAll('.item').forEach(row => {
+      const cb = row.querySelector('input[type=checkbox]');
+      const name = row.querySelector('.nm').value.trim();
+      const keep = name && (cb.checked || row.querySelector('select').value || row.querySelector('.nt').value.trim());
+      if (keep) shown++; else hide(row);
+    });
+    if (!shown) hide(cat);
+  });
+  // sections with nothing left (the emergency plan always prints)
+  document.querySelectorAll('section').forEach(sec => {
+    if (sec.querySelector('.sos')) return;
+    const parts = [...sec.querySelectorAll('.grid > div, .member, .cat, textarea:not(.grid textarea)')].filter(el => !el.closest('.member') || el.classList.contains('member'));
+    const notesOnly = sec.querySelector(':scope > textarea');
+    if (notesOnly) { if (!notesOnly.value.trim()) hide(sec); return; }
+    if (parts.length && parts.every(p => p.classList.contains('ph'))) hide(sec);
+  });
+}
 window.addEventListener('beforeprint', () => {
   growAll();
   document.getElementById('printhead').textContent = 'Printed ' + new Date().toLocaleString() + (S.f.tripName ? ' | ' + S.f.tripName : '');
+  prepPrint();
 });
+window.addEventListener('afterprint', () => document.querySelectorAll('.ph').forEach(el => el.classList.remove('ph')));
 
 renderParty(); renderCats(); growAll();
 </script>
