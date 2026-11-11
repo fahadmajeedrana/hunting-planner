@@ -231,7 +231,7 @@
       <div><label class="f">Vehicle parked at</label><input type="text" data-k="vehicleAt"></div>
       <div class="span2"><label class="f">Nearest hospital / medical centre</label><input type="text" data-k="hospital"></div>
       <div class="span2"><label class="f">Weather forecast and river / fire notes</label><textarea data-k="weather"></textarea></div>
-      <div class="span2"><label class="f">Firearm details (make, calibre, serial, licence no.)</label><textarea data-k="firearms" placeholder="e.g. Tikka T3x, calibre, serial, licence number"></textarea></div>
+      <div class="span2"><label class="f">Firearm details (make, calibre, serial, licence no.)</label><textarea data-k="firearms" placeholder="e.g. make, model, calibre, serial, licence number"></textarea></div>
     </div>
   </section>
 
@@ -285,12 +285,12 @@
 </div>
 
 <script>
-const KEY = 'huntTripPlanner.v2', OLDKEY = 'huntTripPlanner.v1', VER = 3;
+const KEY = 'huntTripPlanner.v2', OLDKEY = 'huntTripPlanner.v1', VER = 5;
 const $ = id => document.getElementById(id);
 const SPECIES = ['Red deer','Fallow','Sika','Sambar','Chamois','Tahr','Pig','Goat','Waterfowl','Other'];
 const CAPS = ['Firearms licence','First aid trained','Navigation (map/GPS)','Radio / PLB operation','Experienced hunter','Game recovery / butchery','Strong swimmer','River crossing experience','Driver (4WD)','Fire / shelter skills'];
 const CONDS = ['None known','Asthma','Diabetes','Heart condition','High blood pressure','Epilepsy','Anaphylaxis risk','Back / joint issues'];
-const ALLERGS = ['None known','Penicillin','Bee / wasp','Nuts','Latex','Sandfly reactions'];
+const ALLERGS = ['None known','Penicillin','Bee / wasp','Nuts','Latex','Insect bite reactions'];
 const AGES = ['Under 18','18–29','30–39','40–49','50–59','60+'];
 const ROLES = ['Trip leader','Experienced hunter','Novice','Guest / observer'];
 const YEARS = ['Under 2','2–5','5–10','10–20','20+'];
@@ -307,11 +307,11 @@ const DEF_LOCS = [['vehicle','Vehicle / trailhead'],['camp','Camp / hut'],['hunt
 const DEF_CATS = [
  ['Camp', [['Tent'],['Hammer'],['Sleeping bag'],['Mattress'],['Headlamp'],['Tent lamp'],['Tarps'],['Pillow'],['Spare batteries',1],['Tent pegs / spare guy line',1],['Spare tent / fly',1,1],['Ground sheet',1,1],['Axe / saw',1,1],['Camp chair',1,1]]],
  ['Toiletries', [['Toilet tissue'],['Wipes'],['Hand wash'],['Hand sanitiser'],['Body wash / shampoo'],['Toothbrush'],['Toothpaste'],['Towel'],['Trowel',1]]],
- ['First aid / medicine', [['Paracetamol'],['Brufen'],['Tday / anti-allergy'],['Nibrol Forte'],['Hydrosol / rash'],['Flagyl'],['Energy capsules'],['Electrolyte powder'],['Sun screen'],['Sandfly spray'],['Bandage'],['Compression bandage / tourniquet',1],['Blister plasters',1],['Scissors / tweezers',1],['Personal prescription meds',1],['Water purification tablets / filter',1],['Triangular bandage',1,1],['Antiseptic wipes',1,1],['Antiseptic cream',1,1],['Antifungal powder',1,1],['Vaseline',1,1],['Plasters',1,1],['Thermometer',1,1],['Glucose lollies',1,1]]],
- ['Food', [['Tea bags / decaf coffee / green tea'],['Sugar'],['Salt'],['Black pepper'],['Milk (long life / powder)'],['Wraps / bread'],['Ready meal'],['Tinned meat / fish'],['Cooked meat'],['Sauces'],['Oat bar'],['Chocolate bar'],['Marinated / fresh meat'],['Coke'],['Dates / snacks'],['Emergency food (extra day)',1]]],
+ ['First aid / medicine', [['Pain killer'],['Anti-inflammatory'],['Anti-allergy / antihistamine'],['Muscle relaxant'],['Rash / itch cream'],['Antibiotic'],['Energy supplement'],['Electrolyte powder'],['Sun screen'],['Insect repellent'],['Bandage'],['Compression bandage / tourniquet',1],['Blister plasters',1],['Scissors / tweezers',1],['Personal prescription meds',1],['Water purification tablets / filter',1],['Triangular bandage',1,1],['Antiseptic wipes',1,1],['Antiseptic cream',1,1],['Antifungal powder',1,1],['Vaseline',1,1],['Plasters',1,1],['Thermometer',1,1],['Energy sweets',1,1]]],
+ ['Food', [['Hot drinks (tea / coffee)'],['Salt, pepper, sugar'],['Milk (long life / powder)'],['Wraps / bread'],['Ready meal'],['Tinned meat / fish'],['Cooked meat'],['Sauces'],['Snack bars'],['Marinated / fresh meat'],['Soft drink'],['Dates / snacks'],['Emergency food (extra day)',1]]],
  ['Utensils / cooking / misc', [['Pots'],['Stove / gas'],['Spoons'],['Garbage bags'],['Lighter'],['Water container'],['Multi tool'],['Pen'],['Notebook'],['Tape'],['Power bank'],['Charger'],['Spare lighter / firelighters',1],['Whistle',1],['Matches / fire starter',1,1],['Repair kit (duct tape, zip ties, needle)',1,1],['Spare boot laces',1,1]]],
- ['Hunting', [['Survival blanket'],['Plastic bag (meat)'],['Meat sack'],['Pull-through'],['Range finder'],['Tikka T3x'],['Suppressor'],['Ammo'],['Cleaning kit'],['Knife (small)'],['Knife (big)'],['Knife sharpener'],['Emergency shelter'],['Dry bag'],['Hunting permit'],['Gun licence'],['Rope / paracord'],['Bum bag'],['Hydration bladder'],['Bivvy string'],['Map, ruler, pencil'],['PLB'],['Radio'],['GPS'],['Chamber flag'],['Binoculars',1],['Ear protection',1],['Compass',1,1],['Watch',1,1],['Satellite messenger',1,1],['Rifle oil',1,1],['Bipod',1,1],['Camera',1,1],['Hut tickets',1,1]]],
- ['Clothing', [['Polyprop T-shirt'],['Sweatshirt'],['Thermal shirt'],['Trousers'],['Windbreaker'],['Fleece liner'],['Waterproof upper'],['Waterproof trousers'],['Waterproof socks'],['Wool socks'],['Beanie'],['Gloves'],['Camp trousers'],['Camp T-shirt'],['Camp fleece / hoody'],['Gumboots / crocs'],['Hunting boots'],['High viz jacket'],['High viz cap'],['Gators'],['Spare dry set (sealed in dry bag)',1],['Balaclava',1,1],['Sun hat',1,1],['Sunglasses',1,1],['Down jacket',1,1],['Sandfly head net',1,1]]],
+ ['Hunting', [['Survival blanket'],['Plastic bag (meat)'],['Meat sack'],['Pull-through'],['Range finder'],['Rifle'],['Suppressor'],['Ammo'],['Cleaning kit'],['Knife (small)'],['Knife (big)'],['Knife sharpener'],['Emergency shelter'],['Dry bag'],['Hunting permit'],['Gun licence'],['Rope / paracord'],['Bum bag'],['Hydration bladder'],['Bivvy string'],['Map, ruler, pencil'],['PLB'],['Radio'],['GPS'],['Chamber flag'],['Binoculars',1],['Ear protection',1],['Compass',1,1],['Watch',1,1],['Satellite messenger',1,1],['Rifle oil',1,1],['Bipod',1,1],['Camera',1,1],['Hut tickets',1,1]]],
+ ['Clothing', [['Base layer top'],['Sweatshirt'],['Thermal shirt'],['Trousers'],['Wind jacket'],['Fleece liner'],['Rain jacket'],['Waterproof trousers'],['Waterproof socks'],['Wool socks'],['Beanie'],['Gloves'],['Camp trousers'],['Camp T-shirt'],['Camp fleece / hoody'],['Camp footwear'],['Hunting boots'],['High viz jacket'],['High viz cap'],['Gators'],['Spare dry set (sealed in dry bag)',1],['Balaclava',1,1],['Sun hat',1,1],['Sunglasses',1,1],['Down jacket',1,1],['Insect head net',1,1]]],
  ['Vehicle and paperwork', [['Fuel (enough for return)',1],['Spare tyre / jack',1],['Photo ID',1],['Cash / card',1],['Landowner / DOC permission',1],['Printed copy of this plan left with contact',1]]]
 ];
 const RENAMES = {'Ready rice':'Ready meal','Ready daal':'Ready meal','Chicken tin':'Tinned meat / fish','Cooked chicken':'Cooked meat','Marinated lamb':'Marinated / fresh meat','Wraps / roti':'Wraps / bread','Ketchup':'Sauces','Mayo':'Sauces'};
@@ -361,7 +361,27 @@ if ((S.v || 1) < VER) {
     const c = S.cats.find(x => x.name === cn); if (!c) return;
     items.filter(i => i[2]).forEach(([t]) => { if (!c.items.some(x => (x.t || '').toLowerCase() === t.toLowerCase())) c.items.push({ t, q:'', n:'', done:false, s:true, b:false }); });
   });
-  S.v = VER;
+  S.v = 3;
+}
+if ((S.v || 1) < 4) { // brand names to generic items
+  const R4 = {'Paracetamol':'Pain killer','Brufen':'Anti-inflammatory','Tday / anti-allergy':'Anti-allergy / antihistamine','Nibrol Forte':'Muscle relaxant','Hydrosol / rash':'Rash / itch cream','Flagyl':'Antibiotic','Energy capsules':'Energy supplement','Tikka T3x':'Rifle','Coke':'Soft drink'};
+  S.cats.forEach(c => c.items.forEach(it => { if (R4[it.t]) it.t = R4[it.t]; }));
+  S.v = 4;
+}
+if ((S.v || 1) < 5) { // more generic names (merging duplicates)
+  const R5 = {'Tea bags / decaf coffee / green tea':'Hot drinks (tea / coffee)','Sugar':'Salt, pepper, sugar','Salt':'Salt, pepper, sugar','Black pepper':'Salt, pepper, sugar','Oat bar':'Snack bars','Chocolate bar':'Snack bars','Sandfly spray':'Insect repellent','Sandfly head net':'Insect head net','Glucose lollies':'Energy sweets','Polyprop T-shirt':'Base layer top','Windbreaker':'Wind jacket','Waterproof upper':'Rain jacket','Gumboots / crocs':'Camp footwear'};
+  S.cats.forEach(c => {
+    const seen = {};
+    c.items = c.items.filter(it => {
+      if (R5[it.t]) it.t = R5[it.t];
+      const k = (it.t || '').trim().toLowerCase();
+      if (!k) return true;
+      if (seen[k]) { seen[k].done = seen[k].done || it.done; if (!seen[k].q) seen[k].q = it.q; return false; }
+      seen[k] = it; return true;
+    });
+  });
+  S.party.forEach(m => m.allergs = (m.allergs || []).map(a => a === 'Sandfly reactions' ? 'Insect bite reactions' : a));
+  S.v = 5;
 }
 if (!S.f.mapSys.length) { // carry over details entered before mapping systems existed
   const has = p => S.locs.some(l => (S.f[p + l.id] || '').trim());
