@@ -23,4 +23,4 @@ Saved data is per web address. In your old copy tap **Export backup**, then in t
 
 ## Updating
 
-Edit `index.html`, then change `CACHE = 'trip-planner-v1'` in `sw.js` to a new value (v2, v3...) so installed copies refresh.
+Edit `index.html`, then change `CACHE = 'trip-planner-v3'` in `sw.js` to a new value (v2, v3...) so installed copies refresh.

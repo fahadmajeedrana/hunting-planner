@@ -19,7 +19,6 @@
   body { margin:0; font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif; background:var(--bg); color:var(--ink); }
   .wrap { max-width:960px; margin:0 auto; padding:16px; }
   header { padding-top:env(safe-area-inset-top); }
-  #installBtn { display:none; }
   header { background:var(--accent); color:#fff; padding:18px 0; }
   header h1 { margin:0; font-size:22px; }
   header p { margin:4px 0 0; opacity:.85; font-size:13px; }
@@ -1245,9 +1244,23 @@ function sharePdf(){
 
 // ---------- PWA: offline cache, install button, durable storage ----------
 let deferredInstall = null;
-window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferredInstall = e; $('installBtn').style.display = 'inline-block'; });
-window.addEventListener('appinstalled', () => { deferredInstall = null; $('installBtn').style.display = 'none'; });
-function installApp(){ if (deferredInstall) { deferredInstall.prompt(); deferredInstall = null; $('installBtn').style.display = 'none'; } }
+const isStandalone = () => (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
+const INST_FLAG = 'tripPlannerInstalled';
+const instFlag = v => { try { if (v === undefined) return localStorage.getItem(INST_FLAG) === '1'; v ? localStorage.setItem(INST_FLAG, '1') : localStorage.removeItem(INST_FLAG); } catch(e){ return false; } };
+function refreshInstallBtn(){ $('installBtn').style.display = (isStandalone() || instFlag()) ? 'none' : 'inline-block'; }
+if (isStandalone()) instFlag(true); // remember this device has the app, so the button stays hidden in a browser tab too
+refreshInstallBtn();
+// the browser only offers installation when the app is NOT installed, so this also corrects a stale flag after an uninstall
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferredInstall = e; instFlag(false); refreshInstallBtn(); });
+window.addEventListener('appinstalled', () => { deferredInstall = null; instFlag(true); refreshInstallBtn(); });
+function installApp(){
+  if (deferredInstall) { deferredInstall.prompt(); deferredInstall = null; return; }
+  if (!/^https?:$/.test(location.protocol)) { alert('To install, open this app from its web address (for example your GitHub Pages link), not from a file or a preview.'); return; }
+  const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  alert(ios
+    ? 'On iPhone / iPad: open this page in Safari, tap the Share button, then "Add to Home Screen".'
+    : 'Use your browser menu (three dots, top right or bottom right) and choose "Install app" or "Add to Home screen".\n\nIf you do not see it: reload the page once, make sure you are on the https:// address, and try Chrome or Edge. If a browser says it is already installed, clear this site\'s data in the browser\'s site settings and reload.');
+}
 if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) navigator.serviceWorker.register('sw.js').catch(() => {});
 try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch(e){}
 
